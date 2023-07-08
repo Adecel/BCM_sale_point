@@ -201,66 +201,6 @@
                       </div>
                     </div>
 
-                    <!-- <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">DISCOUNT(%)</span>
-                      </div>
-                      <input type="text" class="form-control"  name="txtdiscount" id="txtdiscount_p"  value="" >
-                      <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                      </div>
-                    </div> -->
-
-                    <!-- <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">DISCOUNT(Rs)</span>
-                      </div>
-                      <input type="text" class="form-control" id="txtdiscount_n" readonly >
-                      <div class="input-group-append">
-                        <span class="input-group-text">Rs</span>
-                      </div>
-                    </div> -->
-
-                    <!-- <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">SGST(%)</span>
-                      </div>
-                      <input type="text" class="form-control"  name="txtsgst" id="txtsgst_id_p" value="" readonly >
-                      <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                      </div>
-                    </div> -->
-
-                    <!-- <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">CGST(%)</span>
-                      </div>
-                      <input type="text" class="form-control" name="txtcgst" id="txtcgst_id_p" value="" readonly  >
-                      <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                      </div>
-                    </div> -->
-
-                    <!-- <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">SGST(Rs)</span>
-                      </div>
-                      <input type="text" class="form-control" id="txtsgst_id_n" readonly >
-                      <div class="input-group-append">
-                        <span class="input-group-text">Rs</span>
-                      </div>
-                    </div> -->
-
-                    <!-- <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">CGST(Rs)</span>
-                      </div>
-                      <input type="text" class="form-control" id="txtcgst_id_n" readonly >
-                      <div class="input-group-append">
-                        <span class="input-group-text">Rs</span>
-                      </div>
-                    </div> -->
-
                     <hr style="height:2px; border-width:0; color:black; background-color:black;">
 
                     <div class="input-group">
