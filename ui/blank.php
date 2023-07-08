@@ -1,12 +1,8 @@
 <?php
-
 include_once "header.php";
-
-
 ?>
 
-
-<!-- Content Wrapper. Contains page content -->
+<!-- Content Wrapper.   Contains page content -->
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <div class="content-header">
@@ -31,7 +27,6 @@ include_once "header.php";
     <div class="container-fluid">
       <div class="row">
         <div class="col-lg-12">
-        
 
         <div class="card card-primary card-outline">
             <div class="card-header">
@@ -44,9 +39,7 @@ include_once "header.php";
               <a href="#" class="btn btn-primary">Go somewhere</a>
             </div>
           </div>
-     
 
-       
         </div>
         <!-- /.col-md-6 -->
       </div>
@@ -57,10 +50,6 @@ include_once "header.php";
 </div>
 <!-- /.content-wrapper -->
 
-
 <?php
-
 include_once "footer.php";
-
-
 ?>
