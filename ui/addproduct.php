@@ -127,7 +127,7 @@ if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_ex
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0">Ajouter les produit</h1>
+          <h1 class="m-0">Ajouter les produit2</h1>
         </div><!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
