@@ -1,0 +1,529 @@
+1- page 01: this page save and modified on the same page
+<?php
+
+include_once 'connectdb.php';
+session_start();
+
+include_once "header.php";
+
+if(isset($_POST['btnsave'])){
+
+  $suppliername = $_POST['txtname'];
+  $suppliernumber = $_POST['txtphone'];
+  $supplieremail = $_POST['txtemail'];
+  $supplieraddress = $_POST['txtaddress'];
+
+  if(empty($suppliername)){
+
+      $_SESSION['status']="Le nom du fournisseur est vide";
+      $_SESSION['status_code']="warning";
+
+  }
+  else{
+
+    $insert=$pdo->prepare("insert into tbl_supplier (SupplierName,SupplierNumber,SupplierEmail,SupplierAddress) values(:name,:number,:email,:address)");
+
+    $insert->bindParam(':name',$suppliername);
+    $insert->bindParam(':number',$suppliernumber);
+    $insert->bindParam(':email',$supplieremail);
+    $insert->bindParam(':address',$supplieraddress);
+
+    if($insert->execute()){
+        $_SESSION['status']="Unité ajoutée avec succès";
+        $_SESSION['status_code']="success";
+
+    }else{
+
+        $_SESSION['status']="Échec dajout de unité";
+        $_SESSION['status_code']="warning";
+    }
+    }
+
+}
+
+
+if(isset($_POST['btnupdate'])){
+
+  $suppliername = $_POST['txtname'];
+  $suppliernumber = $_POST['txtphone'];
+  $supplieremail = $_POST['txtemail'];
+  $supplieraddress = $_POST['txtaddress'];
+  $id = $_POST['txtsupplierid'];
+
+  if(empty($suppliername)){
+
+      $_SESSION['status']="Le nom du fournisseur est vide";
+      $_SESSION['status_code']="warning";
+
+  }
+  else{
+
+    $update=$pdo->prepare("update tbl_supplier set SupplierName=:name, SupplierNumber=:number,
+    SupplierEmail=:email, SupplierAddress=:address where SupplierId=".$id);
+
+    $update->bindParam(':name',$suppliername);
+    $update->bindParam(':number',$suppliernumber);
+    $update->bindParam(':email',$supplieremail);
+    $update->bindParam(':address',$supplieraddress);
+
+    if($update->execute()){
+        $_SESSION['status']="Unité mis a jour avec succès";
+        $_SESSION['status_code']="success";
+
+    }else{
+
+        $_SESSION['status']="Échec mis a jour de unité";
+        $_SESSION['status_code']="warning";
+    }
+    }
+
+}
+
+If(isset($_POST['btndelete'])){
+
+  $delete=$pdo->prepare("delete from tbl_supplier where SupplierId=".$_POST['btndelete']);
+
+  if($delete->execute()){
+   $_SESSION['status']="Supprimé";
+   $_SESSION['status_code']="success";
+
+  }else{
+
+   $_SESSION['status']="Échec de la suppression";
+   $_SESSION['status_code']="warning";
+
+
+  }
+
+ }else{
+
+ }
+
+?>
+
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Les fournisseurs</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <!-- <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Starter Page</li> -->
+          </ol>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid">
+    <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h5 class="m-0">Formulaire des fournisseurs</h5>
+            </div>
+            <div class="card-body">
+
+            <form action="" method="post">
+
+<div class="row">
+
+<?php
+
+  if(isset($_POST['btnedit'])){
+
+    $select=$pdo->prepare("select * from tbl_supplier where SupplierId =".$_POST['btnedit']);
+    $select->execute();
+
+    if($select){
+    $row=$select->fetch(PDO::FETCH_OBJ);
+
+    echo'
+    <div class="col-md-4">
+
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Nom du fournisseur</label>
+                    <input type="hidden" class="form-control" placeholder="Entrez le nom du fournisseur" value="'.$row->SupplierId.'" name="txtsupplierid">
+                    <input type="text" class="form-control" placeholder="Entrez le nom du fournisseur" value="'.$row->SupplierName.'" name="txtname">
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Téléphone du fournisseur</label>
+                    <input type="text" class="form-control" placeholder="Entrez le Téléphone du fournisseur" value="'.$row->SupplierNumber.'" name="txtphone">
+                  </div>
+
+
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">E-mail du fournisseur</label>
+                    <input type="email" class="form-control"  placeholder="Entrez le-mail du fournisseur" value="'.$row->SupplierEmail.'" name="txtemail">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Adresse du fournisseur</label>
+                    <input type="text" class="form-control" placeholder="Entrez ladresse du fournisseur" value="'.$row->SupplierAddress.'" name="txtaddress">
+                  </div>
+
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-info" name="btnupdate">mise à jour</button>
+                </div>
+</div>';
+
+    }
+
+
+  }
+  else{
+    echo'
+    <div class="col-md-3">
+
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Nom du fournisseur</label>
+                    <input type="text" class="form-control" placeholder="Entrez le nom du fournisseur" name="txtname">
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Téléphone du fournisseur</label>
+                    <input type="text" class="form-control" placeholder="Entrez le Téléphone du fournisseur" name="txtphone">
+                  </div>
+
+
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">E-mail du fournisseur</label>
+                    <input type="email" class="form-control"  placeholder="Entrez le-mail du fournisseur" name="txtemail">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Adresse du fournisseur</label>
+                    <input type="text" class="form-control" placeholder="Entrez ladresse du fournisseur" name="txtaddress">
+                  </div>
+
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary" name="btnsave">Sauvegarder</button>
+                </div>
+</div>';
+
+  }
+
+?>
+
+
+
+<div class="col-md-9">
+
+<table id="table_supplier" class="table table-striped table-hover ">
+<thead>
+<tr>
+ <!-- <td>#</td> -->
+ <td>Nom</td>
+ <td>Téléphone</td>
+ <td>E-mail</td>
+ <td>Adresse</td>
+ <td>Modifier</td>
+ <td>Supprimer</td>
+</tr>
+
+</thead>
+
+
+<tbody>
+
+<?php
+
+$select = $pdo->prepare("select * from tbl_supplier order by SupplierId ASC");
+$select->execute();
+
+while($row=$select->fetch(PDO::FETCH_OBJ))
+{
+
+echo'
+<tr>
+
+<td>'.$row->SupplierName.'</td>
+<td>'.$row->SupplierNumber.'</td>
+<td>'.$row->SupplierEmail.'</td>
+<td>'.$row->SupplierAddress.'</td>
+<td>
+<button type="submit" class="btn btn-primary" value="'.$row->SupplierId.'" name="btnedit">Modifiez</button>
+</td>
+<td>
+<button type="submit" class="btn btn-danger" value="'.$row->SupplierId.'" name="btndelete">Supprimez</button>
+</td>
+
+
+</tr>';
+
+}
+
+?>
+
+</tbody>
+
+<tfoot>
+<tr>
+ <!-- <td>#</td> -->
+ <td>Nom</td>
+ <td>Téléphone</td>
+ <td>E-mail</td>
+ <td>Adresse</td>
+ <td>Modifier</td>
+ <td>Supprimer</td>
+</tr>
+</tfoot>
+
+</table>
+
+
+
+
+</div>
+
+
+
+
+
+
+            </div>
+
+            </form>
+
+            </div>
+          </div>
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+
+<?php
+
+include_once "footer.php";
+
+
+?>
+
+<?php
+  if(isset($_SESSION['status']) && $_SESSION['status']!='')
+
+  {
+
+?>
+<script>
+
+
+     Swal.fire({
+        icon: '<?php echo $_SESSION['status_code'];?>',
+        title: '<?php echo $_SESSION['status'];?>'
+      });
+
+</script>
+<?php
+unset($_SESSION['status']);
+  }
+  ?>
+
+<script>
+
+$(document).ready( function () {
+    $('#table_supplier').DataTable();
+} );
+
+</script>
+
+
+2- page 02
+<?php
+include_once 'connectdb.php';
+session_start();
+if($_SESSION['useremail']=="" OR $_SESSION['role']=="User"){
+    header('location:../index.php');
+}
+if($_SESSION['role']=="Admin" ){
+    include_once "header.php";
+}else{
+    include_once "headeruser.php";
+}
+error_reporting(0);
+$id=$_GET['id'];
+
+if(isset($id)){
+    $delete=$pdo->prepare("delete from tbl_user where userid =".$id);
+    if($delete->execute()){
+        $_SESSION['status']="Compte supprimé avec succès";
+        $_SESSION['status_code']="success";
+    }
+    else{
+        $_SESSION['status']="Le compte n'est pas supprimé";
+        $_SESSION['status_code']="warning";
+    }
+}
+if(isset($_POST['btnsave'])){
+    $username = $_POST['txtname'];
+    $useremail = $_POST['txtemail'];
+    $userpassword= $_POST['txtpassword'];
+    $userrole= $_POST['txtselect_option'];
+    if(isset($_POST['txtemail'])){
+        $select=$pdo->prepare("select useremail from tbl_user where useremail='$useremail'");
+        $select->execute();
+        if($select->rowCount()>0){
+            $_SESSION['status']="L'email existe déjà. Créer un compte à partir d'un nouvel e-mail";
+            $_SESSION['status_code']="warning";
+        }
+        else{
+            $insert=$pdo->prepare("insert into tbl_user (username,useremail,userpassword,role) values(:name,:email,:password,:role)");
+            $insert->bindParam(':name',$username);
+            $insert->bindParam(':email',$useremail);
+            $insert->bindParam(':password',$userpassword);
+            $insert->bindParam(':role',$userrole);
+            if($insert->execute()){
+                $_SESSION['status']="L'utilisateur inséré avec succès dans la base de données";
+                $_SESSION['status_code']="success";
+            }
+            else{
+                $_SESSION['status']="Erreur lors de l'insertion de l'utilisateur dans la base de données";
+                $_SESSION['status_code']="error";
+            }
+        }
+    }
+}
+?>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Enregistrement</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <!-- <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Starter Page</li> -->
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div class="content">
+        <div class="container-fluid">
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h5 class="m-0">Formulaire d'Inscription</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Registration Form -->
+                        <div class="col-md-4">
+                            <form action="" method="post">
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">Nom d'utilisateur</label>
+                                    <input type="text" class="form-control" placeholder="Entrez le nom" name="txtname" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">E-mail</label>
+                                    <input type="email" class="form-control" placeholder="Entrez l'e-mail" name="txtemail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputPassword1">Mot de passe</label>
+                                    <input type="password" class="form-control" placeholder="Entrez le mot de passe" name="txtpassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Rôle</label>
+                                    <select class="form-control" name="txtselect_option" required>
+                                        <option value="" disabled selected>Sélectionnez un rôle</option>
+                                        <option>Admin</option>
+                                        <option>Utilisateur</option>
+                                        <option>Manager</option>
+                                        <option>Stokers</option>
+                                    </select>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="submit" class="btn btn-primary" name="btnsave">Sauvegarder</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Users List -->
+                        <div class="col-md-8">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                <tr>
+                                    <td>Nom d'utilisateur</td>
+                                    <td>E-mail</td>
+                                    <td>Mot de passe</td>
+                                    <td>Rôle</td>
+                                    <td>Supprimer</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                // Fetch and display all users
+                                $select = $pdo->prepare("SELECT * FROM tbl_user ORDER BY userid ASC");
+                                $select->execute();
+
+                                while ($row = $select->fetch(PDO::FETCH_OBJ)) {
+                                    echo '
+                                            <tr>
+                                                <td>' . $row->username . '</td>
+                                                <td>' . $row->useremail . '</td>
+                                                <td>' . $row->userpassword . '</td>
+                                                 <td>
+                                                    <form method="post" action="">
+                                                        <input type="hidden" name="userid" value="' . $row->userid . '">
+                                                        <select name="role" class="form-control" onchange="this.form.submit()">
+                                                            <option ' . ($row->role == 'Admin' ? 'selected' : '') . '>Admin</option>
+                                                            <option ' . ($row->role == 'Utilisateur' ? 'selected' : '') . '>Utilisateur</option>
+                                                            <option ' . ($row->role == 'Manager' ? 'selected' : '') . '>Manager</option>
+                                                            <option ' . ($row->role == 'Stokers' ? 'selected' : '') . '>Stokers</option>
+                                                        </select>
+                                                        <button type="submit" name="updateRole" class="btn btn-primary mt-2">Mettre à jour</button>
+                                                    </form>
+                                                </td>
+                                                <td>
+                                                    <a href="registration.php?id=' . $row->userid . '" class="btn btn-danger">
+                                                        <i class="fa fa-trash-alt"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>';
+                                }
+                                ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </div><!-- /.content -->
+</div><!-- /.content-wrapper -->
+
+<?php
+include_once "footer.php";
+?>
+
+<!-- Success/Error message handling -->
+<?php
+if (isset($_SESSION['status']) && $_SESSION['status'] != '') {
+    ?>
+    <script>
+        Swal.fire({
+            icon: '<?php echo $_SESSION['status_code']; ?>',
+            title: '<?php echo $_SESSION['status']; ?>'
+        });
+    </script>
+    <?php
+    unset($_SESSION['status']);
+}
+?>
+
+3- i want you the same thing with page 02
