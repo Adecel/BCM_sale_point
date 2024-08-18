@@ -10,7 +10,7 @@ if($_SESSION['useremail']==""  OR $_SESSION['role']=="User"){
 if($_SESSION['role']=="Admin"){
   include_once'header.php';
 }else{
-  include_once'headeruser.php';
+  include_once 'UserHeader.php';
 }
 
 if(isset($_POST['btnsave'])){

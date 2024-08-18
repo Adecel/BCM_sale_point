@@ -28,7 +28,7 @@ if (isset($_POST['btn_login'])) {
       // $_SESSION['status']="Connexion réussie par l'administrateur";
       $_SESSION['status_code']="success";
 
-      header('refresh: 1;ui/dashboard.php');
+      header('refresh: 1;ui/Dashboard.php');
 
 $_SESSION['userid']=$row['userid'];
 $_SESSION['username'] = $row['username'];
@@ -46,7 +46,7 @@ $_SESSION['role'] = $row['role'];
       $_SESSION['status']="Login Success By User";
       $_SESSION['status_code']="success";
 
-      header('refresh: 3;ui/user.php');
+      header('refresh: 3;ui/UserDashboard.php');
 
       $_SESSION['userid']=$row['userid'];
       $_SESSION['username'] = $row['username'];

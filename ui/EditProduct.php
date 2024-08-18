@@ -1,20 +1,23 @@
 <?php
 include_once 'connectdb.php';
 session_start();
-if($_SESSION['useremail']==""  OR $_SESSION['role']=="User"){
 
-  header('location:../index.php');
-  
-  }
-
-
-  if($_SESSION['role']=="Admin"){
-    include_once'header.php';
-  }else{
-  
-    include_once'headeruser.php';
-  }
-
+// Check if the session 'role' is set, and load the appropriate header based on the role
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] == 'Admin') {
+        include_once 'header.php';
+    } elseif ($_SESSION['role'] == 'Manager') {
+        include_once 'ManagerHeader.php';
+    } else {
+        // Redirect to the login page or access denied page if role doesn't match
+        header('location:../index.php');
+        exit();
+    }
+} else {
+    // If session 'role' is not set, redirect to the login page
+    header('location:../index.php');
+    exit();
+}
 
 $id = $_GET['id'];
 

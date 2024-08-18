@@ -1,17 +1,23 @@
 <?php
-  include_once 'connectdb.php';
-  session_start();
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
-  if($_SESSION['useremail']==""  OR $_SESSION['role']=="User"){
+include_once 'connectdb.php';
+session_start();
+
+// Check if the session 'role' is set and load the appropriate header
+if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
+    include_once 'header.php';
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] == 'Manager') {
+    include_once 'ManagerHeader.php';
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] == 'Stockeur') {
+    include_once 'StockerHeader.php';
+} else {
+    // Redirect to the login page or access denied page if role doesn't match
     header('location:../index.php');
-  }
-
-  if($_SESSION['role']=="Admin"){
-    include_once'header.php';
-  }
-  else{
-    include_once'headeruser.php';
-  }
+    exit();
+}
 
 if(isset($_POST['btnsave'])){
 

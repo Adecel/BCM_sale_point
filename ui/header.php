@@ -178,7 +178,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="dashboard.php" class="brand-link">
+    <a href="Dashboard.php" class="brand-link">
       <img src="../dist/img/BCM.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">BCM System | Admin</span>
     </a>
@@ -214,7 +214,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                with font-awesome or any other icon font library -->
       
           <li class="nav-item">
-            <a href="dashboard.php" class="nav-link">
+            <a href="Dashboard.php" class="nav-link">
             <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>
                 Tableau de bord
@@ -223,7 +223,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </li>
 
           <li class="nav-item">
-            <a href="supplier.php" class="nav-link">
+            <a href="Supplier.php" class="nav-link">
               <i class="nav-icon fas fa-truck"></i>
               <p>
                 Gérer les fournisseurs
@@ -232,7 +232,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </li>
 
           <li class="nav-item">
-            <a href="category.php" class="nav-link">
+            <a href="Category.php" class="nav-link">
               <i class="nav-icon fas fa-braille"></i>
               <p>
                 Gérer les catégories
@@ -260,13 +260,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="addproduct.php" class="nav-link">
+                <a href="AddProduct.php" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Ajouter les produits</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="productlist.php" class="nav-link">
+                <a href="ProductList.php" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Liste de produits</p>
                 </a>
@@ -304,7 +304,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
           </li>
           <li class="nav-item">
-            <a href="orderlist.php" class="nav-link">
+            <a href="OrderList.php" class="nav-link">
             <i class="nav-icon fas fa-list"></i>
               <p>
               Liste de commandes
@@ -323,17 +323,35 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="tablereport.php" class="nav-link">
+                <a href="ReportTable.php" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Rapport de tableau</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="graphreport.php" class="nav-link">
+                <a href="ReportGraph.php" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Rapport graphique</p>
                 </a>
               </li>
+                <li class="nav-item">
+                    <a href="ReportDaily.php" class="nav-link">
+                        <i class="far fa-circle nav-icon"></i>
+                        <p>Rapport journalière</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="ReportMonthly.php" class="nav-link">
+                        <i class="far fa-circle nav-icon"></i>
+                        <p>Rapport mensuel</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="ReportAnnual.php" class="nav-link">
+                        <i class="far fa-circle nav-icon"></i>
+                        <p>Rapport annuel</p>
+                    </a>
+                </li>
             </ul>
           </li>
 
@@ -358,7 +376,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </li>
 
           <li class="nav-item">
-            <a href="changepassword.php" class="nav-link">
+            <a href="ChangePassword.php" class="nav-link">
             <i class="nav-icon fas fa-user-lock"></i>
               <p>
                 Changer le mot de passe

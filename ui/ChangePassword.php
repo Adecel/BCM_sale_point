@@ -3,30 +3,18 @@
 include_once 'connectdb.php';
 session_start();
 
-
-if($_SESSION['useremail']=="" ){
-
-  header('location:../index.php');
-  
-  }
-
-
-  if($_SESSION['role']=="Admin" ){
-
-    include_once "header.php";
-
-    
-  }else{
-
-    include_once "headeruser.php";
-
-  }
-
-
-
+// Check if the session 'role' is set and load the appropriate header
+if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
+    include_once 'header.php';
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] == 'Manager') {
+    include_once 'ManagerHeader.php';
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] == 'Stockeur') {
+    include_once 'StockerHeader.php';
+} else{
+    include_once "UserHeader.php";
+}
 
 // 1 Step) When user click on updatepassword button then we get out values from user into php variables.
-
 
 if(isset($_POST['btnupdate'])){
 
@@ -35,7 +23,6 @@ $newpassword_txt=$_POST['txt_newpassword'];
 $rnewpassword_txt=$_POST['txt_rnewpassword'];
 
 //echo $oldpassword_txt."-".$newpassword_txt."-".$rnewpassword_txt;
-
 
 // 2 Step) Using of select Query we will get out database records according to useremail.
 
