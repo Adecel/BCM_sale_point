@@ -125,6 +125,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="ProductMissing.php" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Produit manquant</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="ChangePassword.php" class="nav-link">
                             <i class="nav-icon fas fa-user-lock"></i>
                             <p>Changer le mot de passe</p>

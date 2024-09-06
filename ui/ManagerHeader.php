@@ -162,7 +162,7 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="AddProduct.php" class="nav-link">
+                                <a href="ProductAdd.php" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Ajouter les produits</p>
                                 </a>
@@ -171,6 +171,18 @@
                                 <a href="ProductList.php" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Liste de produits</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="ProductMissing.php" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Produit manquant</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="ProductPredictionReport.php" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Liste des predictions</p>
                                 </a>
                             </li>
                         </ul>

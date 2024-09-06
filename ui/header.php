@@ -251,27 +251,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </li>
 <!--  -->
           <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-sitemap"></i>
-              <p>
-              Gérer les produits
-                <i class="fas fa-angle-left right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="AddProduct.php" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Ajouter les produits</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="ProductList.php" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Liste de produits</p>
-                </a>
-              </li>
-            </ul>
+              <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-sitemap"></i>
+                  <p>
+                      Gérer les produits
+                      <i class="fas fa-angle-left right"></i>
+                  </p>
+              </a>
+              <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                      <a href="ProductAdd.php" class="nav-link">
+                          <i class="far fa-circle nav-icon"></i>
+                          <p>Ajouter les produits</p>
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a href="ProductList.php" class="nav-link">
+                          <i class="far fa-circle nav-icon"></i>
+                          <p>Liste de produits</p>
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a href="ProductMissing.php" class="nav-link">
+                          <i class="far fa-circle nav-icon"></i>
+                          <p>Produit manquant</p>
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a href="ProductPredictionReport.php" class="nav-link">
+                          <i class="far fa-circle nav-icon"></i>
+                          <p>Liste des predictions</p>
+                      </a>
+                  </li>
+              </ul>
           </li>
 <!--  -->
           <!-- <li class="nav-item">

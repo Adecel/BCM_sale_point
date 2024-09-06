@@ -2,17 +2,13 @@
 include_once 'connectdb.php';
 session_start();
 
-// Check if the user is logged in and is not a regular user
-//if ($_SESSION['useremail'] == "" OR $_SESSION['role'] == "User") {
-//    header('location:../index.php');
-//}
-
-// Include the appropriate header based on the user's role
-if ($_SESSION['role'] == "Admin") {
-    include_once "header.php";
-}
-else {
-    include_once "ManagerHeader.php";
+// Check if the session 'role' is set and load the appropriate header
+if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
+    include_once 'header.php';
+} else {
+    // Redirect to the login page or access denied page if role doesn't match
+    header('location:../index.php');
+    exit();
 }
 
 error_reporting(0);

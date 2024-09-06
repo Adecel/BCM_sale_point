@@ -10,7 +10,7 @@ if (isset($_SESSION['role'])) {
     } elseif ($_SESSION['role'] == 'Manager') {
         include_once 'ManagerHeader.php';
     } elseif ($_SESSION['role'] == 'Utilisateur') {
-        include_once 'UserDashboard.php';
+        include_once 'UserHeader.php';
     } else {
         // Redirect to the login page or access denied page if role doesn't match
         header('location:../index.php');
