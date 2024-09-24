@@ -207,11 +207,8 @@ $totalPages = ceil($total / $limit);
                                         <td>Supprimer</td>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="product-list">
                                 <?php
-                                // Fetch and display all products in need that are not deleted
-                                //$select = $pdo->prepare("SELECT * FROM tbl_ProductInNeed WHERE IsDeleted = 0 ORDER BY ProductInNeedId ASC");
-                                //$select->execute();
                                 $select = $pdo->prepare("SELECT * FROM tbl_ProductInNeed WHERE IsDeleted = 0 ORDER BY ProductInNeedId DESC LIMIT :start, :limit");
                                 $select->bindParam(':start', $start, PDO::PARAM_INT);
                                 $select->bindParam(':limit', $limit, PDO::PARAM_INT);
@@ -272,13 +269,29 @@ $totalPages = ceil($total / $limit);
                     data: {query: query}, // Data to send (the search query)
                     success: function(data) {
                         $('#search-results').html(data); // Display the search results in the 'search-results' div
+                        // Also update the product list based on the query
+                        updateProductList(query);
                     }
                 });
             } else {
                 $('#search-results').html(''); // Clear the search results if the input is empty
+                updateProductList(''); // Show all products
             }
         });
+
+        function updateProductList(query) {
+            $.ajax({
+                url: 'fetchProducts.php', // New PHP script to fetch filtered products
+                method: 'POST',
+                data: {query: query},
+                success: function(data) {
+                    // Assuming you have a div with id 'product-list' to display the products
+                    $('#product-list').html(data);
+                }
+            });
+        }
     });
+
 </script>
 
 
