@@ -7,7 +7,7 @@ if (isset($_POST['btn_login'])) {
     $password = $_POST['txt_password'];
 
     // Prepare and execute query
-    $select = $pdo->prepare("SELECT * FROM tbl_user WHERE username = :username AND userpassword = :password");
+    $select = $pdo->prepare("SELECT * FROM tUser WHERE username = :username AND userpassword = :password");
     $select->bindParam(':username', $username);
     $select->bindParam(':password', $password);
     $select->execute();

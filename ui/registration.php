@@ -27,7 +27,7 @@ if (isset($_POST['btnsave']) || isset($_POST['btnupdate'])) {
     } else {
         if ($userid) {
             // Update existing user
-            $update = $pdo->prepare("UPDATE tbl_user SET username=:name, useremail=:email, userpassword=:password, role=:role WHERE userid=:id");
+            $update = $pdo->prepare("UPDATE tUser SET username=:name, useremail=:email, userpassword=:password, role=:role WHERE userid=:id");
             $update->bindParam(':name', $username);
             $update->bindParam(':email', $useremail);
             $update->bindParam(':password', $userpassword);
@@ -43,7 +43,7 @@ if (isset($_POST['btnsave']) || isset($_POST['btnupdate'])) {
             }
         } else {
             // Insert new user
-            $insert = $pdo->prepare("INSERT INTO tbl_user (username, useremail, userpassword, role) VALUES (:name, :email, :password, :role)");
+            $insert = $pdo->prepare("INSERT INTO tUser (username, useremail, userpassword, role) VALUES (:name, :email, :password, :role)");
             $insert->bindParam(':name', $username);
             $insert->bindParam(':email', $useremail);
             $insert->bindParam(':password', $userpassword);
@@ -63,7 +63,7 @@ if (isset($_POST['btnsave']) || isset($_POST['btnupdate'])) {
 // Handle deleting a user
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $delete = $pdo->prepare("DELETE FROM tbl_user WHERE userid = :id");
+    $delete = $pdo->prepare("DELETE FROM tUser WHERE userid = :id");
     $delete->bindParam(':id', $id);
 
     if ($delete->execute()) {
@@ -108,7 +108,7 @@ if (isset($_GET['id'])) {
                                 <?php
                                 if (isset($_POST['btnedit'])) {
                                     $userid = $_POST['btnedit'];
-                                    $select = $pdo->prepare("SELECT * FROM tbl_user WHERE userid = :id");
+                                    $select = $pdo->prepare("SELECT * FROM tUser WHERE userid = :id");
                                     $select->bindParam(':id', $userid);
                                     $select->execute();
                                     $row = $select->fetch(PDO::FETCH_OBJ);
@@ -185,7 +185,7 @@ if (isset($_GET['id'])) {
                                 <tbody>
                                 <?php
                                 // Fetch and display all users
-                                $select = $pdo->prepare("SELECT * FROM tbl_user ORDER BY userid ASC");
+                                $select = $pdo->prepare("SELECT * FROM tUser ORDER BY userid ASC");
                                 $select->execute();
 
                                 while ($row = $select->fetch(PDO::FETCH_OBJ)) {

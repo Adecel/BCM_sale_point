@@ -28,7 +28,7 @@ $rnewpassword_txt=$_POST['txt_rnewpassword'];
 
 $email = $_SESSION['useremail'];
 
-$select =$pdo->prepare("select * from tbl_user where useremail='$email'");
+$select =$pdo->prepare("select * from tUser where useremail='$email'");
 
 $select->execute();
 $row=$select->fetch(PDO:: FETCH_ASSOC);
@@ -47,7 +47,7 @@ if($newpassword_txt==$rnewpassword_txt){
 // 4 Step) If values will match then we will run update Query. 
 
 
-$update=$pdo->prepare("update tbl_user set userpassword=:pass where useremail=:email");
+$update=$pdo->prepare("update tUser set userpassword=:pass where useremail=:email");
 
 $update->bindParam(':pass',$rnewpassword_txt);
 $update->bindParam(':email',$email);

@@ -227,7 +227,7 @@ $image_db=$row['image'];
                           <option value="" disabled selected>Select Category</option>
                          
 <?php
-$select=$pdo->prepare("select * from tbl_category order by catid desc");
+$select=$pdo->prepare("select * from tCategory order by catid desc");
 $select->execute();
 
 while($row=$select->fetch(PDO::FETCH_ASSOC))
@@ -255,7 +255,7 @@ extract($row);
                           <option value="" disabled selected>Select Category</option>
                          
 <?php
-$select=$pdo->prepare("select * from tbl_unit order by unitid desc");
+$select=$pdo->prepare("select * from tUnit order by unitid desc");
 $select->execute();
 
 while($row=$select->fetch(PDO::FETCH_ASSOC))
@@ -283,7 +283,7 @@ extract($row);
                           <option value="" disabled selected>Select Category</option>
                          
 <?php
-$select=$pdo->prepare("select * from tbl_supplier order by SupplierId desc");
+$select=$pdo->prepare("select * from tSupplier order by SupplierId desc");
 $select->execute();
 
 while($row=$select->fetch(PDO::FETCH_ASSOC))

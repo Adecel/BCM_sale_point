@@ -56,10 +56,14 @@ if (isset($_SESSION['role'])) {
                                     <th>Status</th>
                                     <th>Number of Times Needed</th>
                                     <th>Product Status</th>
+                                    <th>Amount</th>
+                                    <th>Total Price</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <?php
+                                $totalPrice = 0; // Initialize total price variable
+
                                 // Fetch products with low stock
                                 $stmt = $pdo->prepare("
                                     SELECT
@@ -72,7 +76,9 @@ if (isset($_SESSION['role'])) {
                                         CASE 
                                             WHEN stock = 0 THEN 'Fini' 
                                             ELSE 'Presque fini' 
-                                        END AS Status
+                                        END AS Status,
+                                        purchaseprice AS Amount,  -- Amount for tbl_product
+                                        (purchaseprice * 10) AS TotalPrice  -- Calculate total price for tbl_product
                                     FROM
                                         tbl_product
                                     WHERE
@@ -85,7 +91,9 @@ if (isset($_SESSION['role'])) {
                                         NULL AS Stock,
                                         'Products in Need' AS Source,
                                         NumberOfTimes,
-                                        'To be added' AS Status
+                                        'To be added' AS Status,
+                                        EstimatePrice AS Amount,  -- Amount for tbl_ProductInNeed
+                                        (EstimatePrice * NumberOfTimes) AS TotalPrice  -- Calculate total price for tbl_ProductInNeed
                                     FROM
                                         tbl_ProductInNeed
                                     WHERE
@@ -95,6 +103,7 @@ if (isset($_SESSION['role'])) {
                                 ");
                                 $stmt->execute();
                                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    $totalPrice += $row['TotalPrice']; // Accumulate total price
                                     echo '<tr>
                                         <td>' . ($row['ProductName'] ? $row['ProductName'] : '') . '</td>
                                         <td>' . ($row['Barcode'] ? $row['Barcode'] : '') . '</td>
@@ -103,10 +112,18 @@ if (isset($_SESSION['role'])) {
                                         <td>' . $row['Status'] . '</td>
                                         <td>' . ($row['NumberOfTimes'] ? $row['NumberOfTimes'] : '') . '</td>
                                         <td>' . ($row['Source'] == 'Stock Status' ? '' : 'To be added') . '</td>
+                                        <td>' . ($row['Amount'] ? number_format($row['Amount'], 2) : '') . '</td>
+                                        <td>' . ($row['TotalPrice'] ? number_format($row['TotalPrice'], 2) : '') . '</td>
                                     </tr>';
                                 }
                                 ?>
                                 </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="8" style="text-align: right;">Total:</td>
+                                    <td><?php echo number_format($totalPrice, 2); ?></td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -134,15 +151,109 @@ if (isset($_SESSION['role'])) {
 
 <script>
     $(document).ready(function() {
-        $('#table_stock_report').DataTable({
+        // Initialize DataTable with button export functionality
+        var table = $('#table_stock_report').DataTable({
             "order": [[0, "asc"]],
             "responsive": true,
             "lengthChange": false,
             "autoWidth": false,
-            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-        }).buttons().container().appendTo('#table_stock_report_wrapper .col-md-6:eq(0)');
+            "buttons": [
+                {
+                    extend: 'copy',
+                    footer: true,  // Export footer with totals
+                    exportOptions: {
+                        modifier: {
+                            page: 'all' // Export all pages
+                        },
+                        // Custom function to append footer row to export data
+                        format: {
+                            body: function(data, row, column, node) {
+                                return data; // No modification in the body
+                            },
+                            footer: function (data, columnIdx) {
+                                // Get the footer data to append it to export
+                                return $('#table_stock_report tfoot tr').children().eq(columnIdx).text();
+                            }
+                        }
+                    }
+                },
+                {
+                    extend: 'csv',
+                    footer: true,
+                    exportOptions: {
+                        modifier: {
+                            page: 'all'
+                        },
+                        format: {
+                            body: function(data, row, column, node) {
+                                return data;
+                            },
+                            footer: function (data, columnIdx) {
+                                return $('#table_stock_report tfoot tr').children().eq(columnIdx).text();
+                            }
+                        }
+                    }
+                },
+                {
+                    extend: 'excel',
+                    footer: true,
+                    exportOptions: {
+                        modifier: {
+                            page: 'all'
+                        },
+                        format: {
+                            body: function(data, row, column, node) {
+                                return data;
+                            },
+                            footer: function (data, columnIdx) {
+                                return $('#table_stock_report tfoot tr').children().eq(columnIdx).text();
+                            }
+                        }
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    footer: true,
+                    exportOptions: {
+                        modifier: {
+                            page: 'all'
+                        },
+                        format: {
+                            body: function(data, row, column, node) {
+                                return data;
+                            },
+                            footer: function (data, columnIdx) {
+                                return $('#table_stock_report tfoot tr').children().eq(columnIdx).text();
+                            }
+                        }
+                    }
+                },
+                {
+                    extend: 'print',
+                    footer: true,
+                    exportOptions: {
+                        modifier: {
+                            page: 'all'
+                        },
+                        format: {
+                            body: function(data, row, column, node) {
+                                return data;
+                            },
+                            footer: function (data, columnIdx) {
+                                return $('#table_stock_report tfoot tr').children().eq(columnIdx).text();
+                            }
+                        }
+                    }
+                },
+                'colvis'
+            ]
+        });
+
+        // Attach buttons to the container
+        table.buttons().container().appendTo('#table_stock_report_wrapper .col-md-6:eq(0)');
     });
 </script>
+
 </body>
 </html>
 

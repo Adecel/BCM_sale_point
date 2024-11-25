@@ -28,7 +28,7 @@ $row=$select->fetch(PDO::FETCH_OBJ);
 
 $total_product=$row->pname;
 
-$select =$pdo->prepare("select count(category) as cate from tbl_category");
+$select =$pdo->prepare("select count(category) as cate from tCategory");
 $select->execute();
 
 $row=$select->fetch(PDO::FETCH_OBJ);

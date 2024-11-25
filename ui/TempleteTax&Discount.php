@@ -69,7 +69,7 @@ if(isset($_POST['btnupdate'])){
 
 //   If(isset($_POST['btndelete'])){
    
-//    $delete=$pdo->prepare("delete from tbl_category where catid=".$_POST['btndelete']); 
+//    $delete=$pdo->prepare("delete from tCategory where catid=".$_POST['btndelete']); 
 
 //    if($delete->execute()){
 //     $_SESSION['status']="Deleted";

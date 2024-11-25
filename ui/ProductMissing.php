@@ -29,6 +29,7 @@ if (isset($_POST['btnsave']) || isset($_POST['btnupdate'])) {
     $userid = $_SESSION['username']; // Assuming username is used for CreatedBy and ModifiedBy
     $productid = isset($_POST['txtproductid']) ? $_POST['txtproductid'] : null;
     $numberoftimes = isset($_POST['txtnumberoftimes']) ? $_POST['txtnumberoftimes'] : 0;
+    $estimateprice = isset($_POST['txtestimateprice']) ? $_POST['txtestimateprice'] : null;
 
     if (empty($productname)) {
         $_SESSION['status'] = "Le nom du produit est obligatoire";
@@ -52,12 +53,14 @@ if (isset($_POST['btnsave']) || isset($_POST['btnupdate'])) {
                 $newNumberOfTimes = $row->NumberOfTimes + $numberoftimes;
 
                 // Update existing product's NumberOfTimes
-                $update = $pdo->prepare("UPDATE tbl_ProductInNeed SET ProductName=:name, ModifiedBy=:modifiedby, ModifiedDate=:modifieddate, NumberOfTimes=:numberoftimes WHERE ProductInNeedId=:id");
+                //$update = $pdo->prepare("UPDATE tbl_ProductInNeed SET ProductName=:name, ModifiedBy=:modifiedby, ModifiedDate=:modifieddate, NumberOfTimes=:numberoftimes WHERE ProductInNeedId=:id");
+                $update = $pdo->prepare("UPDATE tbl_ProductInNeed SET ProductName=:name, ModifiedBy=:modifiedby, ModifiedDate=:modifieddate, NumberOfTimes=:numberoftimes, EstimatePrice=:estimateprice WHERE ProductInNeedId=:id");
                 $update->bindParam(':name', $productname);
                 $update->bindParam(':modifiedby', $userid);
                 $update->bindParam(':modifieddate', $date);
                 $update->bindParam(':numberoftimes', $newNumberOfTimes);
                 $update->bindParam(':id', $row->ProductInNeedId);
+                $update->bindParam(':estimateprice', $estimateprice);
 
                 if ($update->execute()) {
                     $_SESSION['status'] = "Le produit existe déjà, le nombre de fois recherché a été mis à jour";
@@ -68,13 +71,15 @@ if (isset($_POST['btnsave']) || isset($_POST['btnupdate'])) {
                 }
             } else {
                 // Insert new product in need
-                $insert = $pdo->prepare("INSERT INTO tbl_ProductInNeed (ProductName, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, NumberOfTimes, IsDeleted) VALUES (:name, :createdby, :modifiedby, :createddate, :modifieddate, :numberoftimes, 0)");
+                //$insert = $pdo->prepare("INSERT INTO tbl_ProductInNeed (ProductName, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, NumberOfTimes, IsDeleted) VALUES (:name, :createdby, :modifiedby, :createddate, :modifieddate, :numberoftimes, 0)");
+                $insert = $pdo->prepare("INSERT INTO tbl_ProductInNeed (ProductName, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, NumberOfTimes, EstimatePrice, IsDeleted) VALUES (:name, :createdby, :modifiedby, :createddate, :modifieddate, :numberoftimes, :estimateprice, 0)");
                 $insert->bindParam(':name', $productname);
                 $insert->bindParam(':createdby', $userid);
                 $insert->bindParam(':modifiedby', $userid);
                 $insert->bindParam(':createddate', $date);
                 $insert->bindParam(':modifieddate', $date);
                 $insert->bindParam(':numberoftimes', $numberoftimes);
+                $insert->bindParam(':estimateprice', $estimateprice); // Add this line
 
                 if ($insert->execute()) {
                     $_SESSION['status'] = "Produit ajouté avec succès";
@@ -174,6 +179,10 @@ $totalPages = ceil($total / $limit);
                                                     <label for="numberoftimes">Nombre de fois recherché</label>
                                                     <input type="number" class="form-control" name="txtnumberoftimes" value="' . $row->NumberOfTimes . '" required>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label for="estimateprice">Prix estimé</label>
+                                                    <input type="number" class="form-control" step="0.01" name="txtestimateprice" value="' . ($row->EstimatePrice ? $row->EstimatePrice : '') . '">
+                                                </div>
                                                 <button type="submit" class="btn btn-info" name="btnupdate">Mise à jour</button>';
                                         }
                                     }
@@ -186,6 +195,10 @@ $totalPages = ceil($total / $limit);
                                             <div class="form-group">
                                                 <label for="numberoftimes">Nombre de fois recherché</label>
                                                 <input type="number" class="form-control" name="txtnumberoftimes" value="0" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="estimateprice">Prix estimé</label>
+                                                <input type="number" class="form-control" step="0.01" name="txtestimateprice" value="' . ($row->EstimatePrice ? $row->EstimatePrice : '') . '">
                                             </div>
                                             <button type="submit" class="btn btn-primary" name="btnsave">Sauvegarder</button>';
                                     }
@@ -203,6 +216,7 @@ $totalPages = ceil($total / $limit);
                                     <tr>
                                         <td>Nom du produit</td>
                                         <td>Nombre de fois recherché</td>
+                                        <td>Prix estimé</td>
                                         <td>Modifier</td>
                                         <td>Supprimer</td>
                                     </tr>
@@ -219,6 +233,7 @@ $totalPages = ceil($total / $limit);
                                     <tr>
                                         <td>'.$row->ProductName.'</td>
                                         <td>'.$row->NumberOfTimes.'</td>
+                                        <td>' . ($row->EstimatePrice ? number_format($row->EstimatePrice, 2) : 'N/A') . '</td> 
                                         <td>
                                             <form method="post" action="">
                                                 <button type="submit" name="btnedit" class="btn btn-primary" value="'.$row->ProductInNeedId.'">Modifier</button>

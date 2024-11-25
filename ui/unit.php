@@ -24,7 +24,7 @@ if (isset($_POST['btnsave'])) {
         $_SESSION['status'] = "Unité est vide";
         $_SESSION['status_code'] = "warning";
     } else {
-        $insert = $pdo->prepare("INSERT INTO tbl_unit (unitname) VALUES (:cat)");
+        $insert = $pdo->prepare("INSERT INTO tUnit (unitname) VALUES (:cat)");
         $insert->bindParam(':cat', $unit);
 
         if ($insert->execute()) {
@@ -45,7 +45,7 @@ if (isset($_POST['btnupdate'])) {
         $_SESSION['status'] = "Unité est vide";
         $_SESSION['status_code'] = "warning";
     } else {
-        $update = $pdo->prepare("UPDATE tbl_unit SET unitname = :cat WHERE unitid = :id");
+        $update = $pdo->prepare("UPDATE tUnit SET unitname = :cat WHERE unitid = :id");
         $update->bindParam(':cat', $unit);
         $update->bindParam(':id', $id);
 
@@ -62,7 +62,7 @@ if (isset($_POST['btnupdate'])) {
 if (isset($_POST['btndelete'])) {
     $id = $_POST['btndelete'];
 
-    $delete = $pdo->prepare("DELETE FROM tbl_unit WHERE unitid = :id");
+    $delete = $pdo->prepare("DELETE FROM tUnit WHERE unitid = :id");
     $delete->bindParam(':id', $id);
 
     if ($delete->execute()) {
@@ -107,7 +107,7 @@ if (isset($_POST['btndelete'])) {
                         <div class="row">
                             <?php
                             if (isset($_POST['btnedit'])) {
-                                $select = $pdo->prepare("SELECT * FROM tbl_unit WHERE unitid = :id");
+                                $select = $pdo->prepare("SELECT * FROM tUnit WHERE unitid = :id");
                                 $select->bindParam(':id', $_POST['btnedit']);
                                 $select->execute();
 
@@ -149,7 +149,7 @@ if (isset($_POST['btndelete'])) {
                                     </thead>
                                     <tbody>
                                     <?php
-                                    $select = $pdo->prepare("SELECT * FROM tbl_unit ORDER BY unitid ASC");
+                                    $select = $pdo->prepare("SELECT * FROM tUnit ORDER BY unitid ASC");
                                     $select->execute();
 
                                     while ($row = $select->fetch(PDO::FETCH_OBJ)) {

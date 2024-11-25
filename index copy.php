@@ -8,7 +8,7 @@ if (isset($_POST['btn_login'])) {
   $useremail = $_POST['txt_email'];
   $password = $_POST['txt_password'];
 
-  $select = $pdo->prepare("select * from tbl_user where useremail='$useremail' AND userpassword='$password'");
+  $select = $pdo->prepare("select * from tUser where useremail='$useremail' AND userpassword='$password'");
   $select->execute();
 
 
@@ -62,19 +62,9 @@ $_SESSION['role'] = $row['role'];
 
 
   } else {
-
-
-
     // echo $success = "Wrong Email or Password";
-
     $_SESSION['status']="Wrong Email or Password";
     $_SESSION['status_code']="error";
-
-
-
-
-
-
   }
 }
 

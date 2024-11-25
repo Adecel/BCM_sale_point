@@ -24,19 +24,19 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tbl_category`
+-- Table structure for table `tCategory`
 --
 
-CREATE TABLE `tbl_category` (
+CREATE TABLE `tCategory` (
   `catid` int(11) NOT NULL,
   `category` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `tbl_category`
+-- Dumping data for table `tCategory`
 --
 
-INSERT INTO `tbl_category` (`catid`, `category`) VALUES
+INSERT INTO `tCategory` (`catid`, `category`) VALUES
 (28, 'pharmacie'),
 (29, 'beaute'),
 (30, 'litterature');
@@ -146,10 +146,10 @@ INSERT INTO `tbl_product` (`pid`, `barcode`, `product`, `category`, `description
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tbl_supplier`
+-- Table structure for table `tSupplier`
 --
 
-CREATE TABLE `tbl_supplier` (
+CREATE TABLE `tSupplier` (
   `SupplierId` int(20) NOT NULL,
   `SupplierName` varchar(200) NOT NULL,
   `SupplierNumber` varchar(200) NOT NULL,
@@ -158,10 +158,10 @@ CREATE TABLE `tbl_supplier` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `tbl_supplier`
+-- Dumping data for table `tSupplier`
 --
 
-INSERT INTO `tbl_supplier` (`SupplierId`, `SupplierName`, `SupplierNumber`, `SupplierEmail`, `SupplierAddress`) VALUES
+INSERT INTO `tSupplier` (`SupplierId`, `SupplierName`, `SupplierNumber`, `SupplierEmail`, `SupplierAddress`) VALUES
 (10, 'Matos', '+242 06 956 30 22', 'matos@gmail.com', 'brazzaville'),
 (11, 'Abbott', '+27813623440', 'abbott@gmail.com', 'paris rue 209'),
 (12, 'Litha', '0813623440', 'litha@gmail.com', 'brazzaville');
@@ -190,19 +190,19 @@ INSERT INTO `tbl_taxdis` (`taxdis_id`, `sgst`, `cgst`, `discount`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tbl_unit`
+-- Table structure for table `tUnit`
 --
 
-CREATE TABLE `tbl_unit` (
+CREATE TABLE `tUnit` (
   `unitid` int(20) NOT NULL,
   `unitname` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `tbl_unit`
+-- Dumping data for table `tUnit`
 --
 
-INSERT INTO `tbl_unit` (`unitid`, `unitname`) VALUES
+INSERT INTO `tUnit` (`unitid`, `unitname`) VALUES
 (11, 'paquet'),
 (12, 'carton'),
 (13, 'boite');
@@ -210,10 +210,10 @@ INSERT INTO `tbl_unit` (`unitid`, `unitname`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tbl_user`
+-- Table structure for table `tUser`
 --
 
-CREATE TABLE `tbl_user` (
+CREATE TABLE `tUser` (
   `userid` int(11) NOT NULL,
   `username` varchar(200) NOT NULL,
   `useremail` varchar(200) NOT NULL,
@@ -222,10 +222,10 @@ CREATE TABLE `tbl_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `tbl_user`
+-- Dumping data for table `tUser`
 --
 
-INSERT INTO `tbl_user` (`userid`, `username`, `useremail`, `userpassword`, `role`) VALUES
+INSERT INTO `tUser` (`userid`, `username`, `useremail`, `userpassword`, `role`) VALUES
 (18, 'Rusty', 'rusty@gmail.com', 'rusty10', 'Admin'),
 (19, 'Adele', 'adele@gamil.com', '12345', 'Utilisateur'),
 (20, 'Felie', 'felie@gmail.com', '1234', 'Utilisateur'),
@@ -237,9 +237,9 @@ INSERT INTO `tbl_user` (`userid`, `username`, `useremail`, `userpassword`, `role
 --
 
 --
--- Indexes for table `tbl_category`
+-- Indexes for table `tCategory`
 --
-ALTER TABLE `tbl_category`
+ALTER TABLE `tCategory`
   ADD PRIMARY KEY (`catid`);
 
 --
@@ -261,9 +261,9 @@ ALTER TABLE `tbl_product`
   ADD PRIMARY KEY (`pid`);
 
 --
--- Indexes for table `tbl_supplier`
+-- Indexes for table `tSupplier`
 --
-ALTER TABLE `tbl_supplier`
+ALTER TABLE `tSupplier`
   ADD PRIMARY KEY (`SupplierId`);
 
 --
@@ -273,15 +273,15 @@ ALTER TABLE `tbl_taxdis`
   ADD PRIMARY KEY (`taxdis_id`);
 
 --
--- Indexes for table `tbl_unit`
+-- Indexes for table `tUnit`
 --
-ALTER TABLE `tbl_unit`
+ALTER TABLE `tUnit`
   ADD PRIMARY KEY (`unitid`);
 
 --
--- Indexes for table `tbl_user`
+-- Indexes for table `tUser`
 --
-ALTER TABLE `tbl_user`
+ALTER TABLE `tUser`
   ADD PRIMARY KEY (`userid`);
 
 --
@@ -289,9 +289,9 @@ ALTER TABLE `tbl_user`
 --
 
 --
--- AUTO_INCREMENT for table `tbl_category`
+-- AUTO_INCREMENT for table `tCategory`
 --
-ALTER TABLE `tbl_category`
+ALTER TABLE `tCategory`
   MODIFY `catid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
@@ -313,9 +313,9 @@ ALTER TABLE `tbl_product`
   MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
--- AUTO_INCREMENT for table `tbl_supplier`
+-- AUTO_INCREMENT for table `tSupplier`
 --
-ALTER TABLE `tbl_supplier`
+ALTER TABLE `tSupplier`
   MODIFY `SupplierId` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
@@ -325,15 +325,15 @@ ALTER TABLE `tbl_taxdis`
   MODIFY `taxdis_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `tbl_unit`
+-- AUTO_INCREMENT for table `tUnit`
 --
-ALTER TABLE `tbl_unit`
+ALTER TABLE `tUnit`
   MODIFY `unitid` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- AUTO_INCREMENT for table `tbl_user`
+-- AUTO_INCREMENT for table `tUser`
 --
-ALTER TABLE `tbl_user`
+ALTER TABLE `tUser`
   MODIFY `userid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 COMMIT;
 

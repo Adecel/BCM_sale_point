@@ -10,7 +10,6 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
 } elseif (isset($_SESSION['role']) && $_SESSION['role'] == 'Stockeur') {
     include_once 'StockerHeader.php';
 } else {
-    // Redirect to the login page or access denied page if role doesn't match
     header('location:../index.php');
     exit();
 }
@@ -18,13 +17,20 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
 // Save new category
 if (isset($_POST['btnsave'])) {
     $category = $_POST['txtcategory'];
+    $username = $_SESSION['username'];
+    $currentDate = date('Y-m-d H:i:s');
 
     if (empty($category)) {
         $_SESSION['status'] = "La catégorie est vide";
         $_SESSION['status_code'] = "warning";
     } else {
-        $insert = $pdo->prepare("INSERT INTO tbl_category (category) VALUES (:cat)");
+        $insert = $pdo->prepare("INSERT INTO tCategory (CategoryName, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted) 
+                                 VALUES (:cat, :createdBy, :modifiedBy, :createdDate, :modifiedDate, 0)");
         $insert->bindParam(':cat', $category);
+        $insert->bindParam(':createdBy', $username);
+        $insert->bindParam(':modifiedBy', $username);
+        $insert->bindParam(':createdDate', $currentDate);
+        $insert->bindParam(':modifiedDate', $currentDate);
 
         if ($insert->execute()) {
             $_SESSION['status'] = "Catégorie ajoutée avec succès";
@@ -40,13 +46,19 @@ if (isset($_POST['btnsave'])) {
 if (isset($_POST['btnupdate'])) {
     $category = $_POST['txtcategory'];
     $id = $_POST['txtcatid'];
+    $username = $_SESSION['username'];
+    $currentDate = date('Y-m-d H:i:s');
 
     if (empty($category)) {
         $_SESSION['status'] = "La catégorie est vide";
         $_SESSION['status_code'] = "warning";
     } else {
-        $update = $pdo->prepare("UPDATE tbl_category SET category = :cat WHERE catid = :id");
+        $update = $pdo->prepare("UPDATE tCategory 
+                                 SET CategoryName = :cat, ModifiedBy = :modifiedBy, ModifiedDate = :modifiedDate 
+                                 WHERE CategoryId = :id");
         $update->bindParam(':cat', $category);
+        $update->bindParam(':modifiedBy', $username);
+        $update->bindParam(':modifiedDate', $currentDate);
         $update->bindParam(':id', $id);
 
         if ($update->execute()) {
@@ -59,10 +71,18 @@ if (isset($_POST['btnupdate'])) {
     }
 }
 
-// Delete category
+// Delete category (soft delete)
 if (isset($_POST['btndelete'])) {
-    $delete = $pdo->prepare("DELETE FROM tbl_category WHERE catid = :id");
-    $delete->bindParam(':id', $_POST['btndelete']);
+    $id = $_POST['btndelete'];
+    $username = $_SESSION['username'];
+    $currentDate = date('Y-m-d H:i:s');
+
+    $delete = $pdo->prepare("UPDATE tCategory 
+                             SET IsDeleted = 1, ModifiedBy = :modifiedBy, ModifiedDate = :modifiedDate 
+                             WHERE CategoryId = :id");
+    $delete->bindParam(':id', $id);
+    $delete->bindParam(':modifiedBy', $username);
+    $delete->bindParam(':modifiedDate', $currentDate);
 
     if ($delete->execute()) {
         $_SESSION['status'] = "Catégorie supprimée avec succès";
@@ -97,7 +117,7 @@ if (isset($_POST['btndelete'])) {
                             <?php
                             // Edit category form
                             if (isset($_POST['btnedit'])) {
-                                $select = $pdo->prepare("SELECT * FROM tbl_category WHERE catid = :id");
+                                $select = $pdo->prepare("SELECT * FROM tCategory WHERE CategoryId = :id AND IsDeleted = 0");
                                 $select->bindParam(':id', $_POST['btnedit']);
                                 $select->execute();
 
@@ -108,8 +128,8 @@ if (isset($_POST['btndelete'])) {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="txtcategory">Category</label>
-                                            <input type="hidden" class="form-control" name="txtcatid" value="' . $row->catid . '">
-                                            <input type="text" class="form-control" name="txtcategory" value="' . $row->category . '">
+                                            <input type="hidden" class="form-control" name="txtcatid" value="' . $row->CategoryId . '">
+                                            <input type="text" class="form-control" name="txtcategory" value="' . $row->CategoryName . '">
                                         </div>
                                         <div class="card-footer">
                                             <button type="submit" class="btn btn-info" name="btnupdate">Mettre à jour</button>
@@ -131,7 +151,7 @@ if (isset($_POST['btndelete'])) {
                             }
                             ?>
 
-                            <!-- Category List -->
+                            <!-- Category List with Pagination -->
                             <div class="col-md-8">
                                 <table id="table_category" class="table table-striped table-hover">
                                     <thead>
@@ -143,15 +163,15 @@ if (isset($_POST['btndelete'])) {
                                     </thead>
                                     <tbody>
                                     <?php
-                                    $select = $pdo->prepare("SELECT * FROM tbl_category ORDER BY catid ASC");
+                                    $select = $pdo->prepare("SELECT * FROM tCategory WHERE IsDeleted = 0 ORDER BY CategoryId ASC");
                                     $select->execute();
 
                                     while ($row = $select->fetch(PDO::FETCH_OBJ)) {
                                         echo '
                                             <tr>
-                                                <td>' . $row->category . '</td>
-                                                <td><button type="submit" class="btn btn-primary" value="' . $row->catid . '" name="btnedit">Modifier</button></td>
-                                                <td><button type="submit" class="btn btn-danger" value="' . $row->catid . '" name="btndelete">Supprimer</button></td>
+                                                <td>' . $row->CategoryName . '</td>
+                                                <td><button type="submit" class="btn btn-primary" value="' . $row->CategoryId . '" name="btnedit">Modifier</button></td>
+                                                <td><button type="submit" class="btn btn-danger" value="' . $row->CategoryId . '" name="btndelete">Supprimer</button></td>
                                             </tr>';
                                     }
                                     ?>
@@ -190,6 +210,9 @@ if (isset($_SESSION['status']) && $_SESSION['status'] != '') {
 
 <script>
     $(document).ready(function() {
-        $('#table_category').DataTable();
+        $('#table_category').DataTable({
+            "paging": true,
+            "pageLength": 10
+        });
     });
 </script>

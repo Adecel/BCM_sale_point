@@ -21,106 +21,126 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
 
 if(isset($_POST['btnsave'])){
 
-$barcode       =$_POST['txtbarcode'];
-$product       =$_POST['txtproductname'];
-$supplier      =$_POST['txtselect_supplier'];
-$unit          =$_POST['txtselect_unit'];
-$category      =$_POST['txtselect_category'];
-$description   =$_POST['txtdescription'];
-$stock         =$_POST['txtstock'];
-$purchaseprice =$_POST['txtpurchaseprice'];
-$saleprice     =$_POST['txtsaleprice'];
-
-//Image Code or File Code Start Here..
-$f_name        =$_FILES['myfile']['name'];
-$f_tmp         =$_FILES['myfile']['tmp_name'];
-$f_size        =$_FILES['myfile']['size'];
-$f_extension   =explode('.',$f_name);
-$f_extension   =strtolower(end($f_extension));
-
-$f_newfile     =uniqid().'.'. $f_extension;   
-$store = "productimages/".$f_newfile;
+    // Get session username for CreatedBy and ModifiedBy
+    $createdBy = $_SESSION['username'];
+    $modifiedBy = $createdBy;
     
-if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_extension=='gif'){
- 
-  if($f_size>=5000000 ){
-      
-  $_SESSION['status']="Le fichier maximum doit être de 5 MB";
-  $_SESSION['status_code']="warning";
-        
-  }
-  else{
-    if(move_uploaded_file($f_tmp,$store)){
-        $productimage=$f_newfile;
+    // Set current timestamp for CreatedDate and ModifiedDate
+    date_default_timezone_set("Africa/Johannesburg");
+    $createdDate = date('Y-m-d H:i:s');
+    $modifiedDate = $createdDate;
+    
+    // Set IsDeleted to 0 (indicating it's not deleted)
+    $isDeleted = 0;
 
-        if(empty($barcode)){
-          $insert=$pdo->prepare("insert into tbl_product ( barcode,product,category,Supplier,unit,description,stock, purchaseprice, saleprice,image) 
-          values(:barcode,:product,:category,:supplier,:unit,:description,:stock,:pprice,:saleprice,:img)");
+    $barcode       =$_POST['txtbarcode'];
+    $product       =$_POST['txtproductname'];
+    $supplier      =$_POST['txtselect_supplier'];
+    $unit          =$_POST['txtselect_unit'];
+    $category      =$_POST['txtselect_category'];
+    $description   =$_POST['txtdescription'];
+    $stock         =$_POST['txtstock'];
+    $purchaseprice =$_POST['txtpurchaseprice'];
+    $saleprice     =$_POST['txtsaleprice'];
+    
+    // Handle EstimateQteForPurchase (Assuming it comes from the form)
+    $estimateQteForPurchase = $_POST['txtestimateqte'];
 
-        $insert->bindParam(':barcode',$barcode);
+    // Image Code or File Upload Logic
+    $f_name        =$_FILES['myfile']['name'];
+    $f_tmp         =$_FILES['myfile']['tmp_name'];
+    $f_size        =$_FILES['myfile']['size'];
+    $f_extension   =explode('.',$f_name);
+    $f_extension   =strtolower(end($f_extension));
 
-          $insert->bindParam(':product',$product);
-          $insert->bindParam(':category',$category);
-          $insert->bindParam(':supplier',$supplier);
-          $insert->bindParam(':unit',$unit);
-          $insert->bindParam(':description',$description);
-          $insert->bindParam(':stock',$stock);
-          $insert->bindParam(':pprice',$purchaseprice);
-          $insert->bindParam(':saleprice',$saleprice);
-          $insert->bindParam(':img',$productimage);
-  
-          $insert->execute();
+    $f_newfile     =uniqid().'.'. $f_extension;   
+    $store = "productimages/".$f_newfile;
 
-          $pid=$pdo->lastInsertId();
+    if($f_extension=='jpg' || $f_extension=='jpeg' || $f_extension=='png' || $f_extension=='gif'){
+        if($f_size>=5000000 ){
+            $_SESSION['status']="Le fichier maximum doit être de 5 MB";
+            $_SESSION['status_code']="warning";
+        } else {
+            if(move_uploaded_file($f_tmp,$store)){
+                $productimage=$f_newfile;
 
-          date_default_timezone_set("Africa/Johannesburg");
-          $newbarcode=$pid.date('Hisymd');
+                // Insert without barcode (Barcode will be generated)
+                if(empty($barcode)){
+                    $insert = $pdo->prepare("INSERT INTO tbl_product 
+                    (barcode, product, category, Supplier, unit, description, stock, purchaseprice, saleprice, image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace) 
+                    VALUES (:barcode, :product, :category, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
 
-          $update=$pdo->prepare("update tbl_product SET barcode='$newbarcode' where pid='".$pid."'");
+                    $insert->bindParam(':barcode', $barcode);
+                    $insert->bindParam(':product', $product);
+                    $insert->bindParam(':category', $category);
+                    $insert->bindParam(':supplier', $supplier);
+                    $insert->bindParam(':unit', $unit);
+                    $insert->bindParam(':description', $description);
+                    $insert->bindParam(':stock', $stock);
+                    $insert->bindParam(':pprice', $purchaseprice);
+                    $insert->bindParam(':saleprice', $saleprice);
+                    $insert->bindParam(':img', $productimage);
+                    $insert->bindParam(':createdBy', $createdBy);
+                    $insert->bindParam(':modifiedBy', $modifiedBy);
+                    $insert->bindParam(':createdDate', $createdDate);
+                    $insert->bindParam(':modifiedDate', $modifiedDate);
+                    $insert->bindParam(':isDeleted', $isDeleted);
+                    $insert->bindParam(':estimateQte', $estimateQteForPurchase);
 
-          if($update->execute()){
+                    $insert->execute();
 
-            $_SESSION['status']="Produit inséré avec succès";
-            $_SESSION['status_code']="success";
-          }
-          else{
-            $_SESSION['status']="Échec de linsertion du produit";
-            $_SESSION['status_code']="error";
-          }
+                    // Get the last inserted ID to generate the barcode
+                    $pid = $pdo->lastInsertId();
+                    $newbarcode = $pid.date('Hisymd');
 
+                    // Update product with new barcode
+                    $update = $pdo->prepare("UPDATE tbl_product SET barcode='$newbarcode' WHERE pid='$pid'");
+
+                    if($update->execute()){
+                        $_SESSION['status'] = "Produit inséré avec succès";
+                        $_SESSION['status_code'] = "success";
+                    } else {
+                        $_SESSION['status'] = "Échec de l'insertion du produit";
+                        $_SESSION['status_code'] = "error";
+                    }
+
+                // Insert with barcode
+                } else {
+                    $insert = $pdo->prepare("INSERT INTO tbl_product 
+                    (barcode, product, category, Supplier, unit, description, stock, purchaseprice, saleprice, image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace) 
+                    VALUES (:barcode, :product, :category, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
+
+                    $insert->bindParam(':barcode', $barcode);
+                    $insert->bindParam(':product', $product);
+                    $insert->bindParam(':category', $category);
+                    $insert->bindParam(':supplier', $supplier);
+                    $insert->bindParam(':unit', $unit);
+                    $insert->bindParam(':description', $description);
+                    $insert->bindParam(':stock', $stock);
+                    $insert->bindParam(':pprice', $purchaseprice);
+                    $insert->bindParam(':saleprice', $saleprice);
+                    $insert->bindParam(':img', $productimage);
+                    $insert->bindParam(':createdBy', $createdBy);
+                    $insert->bindParam(':modifiedBy', $modifiedBy);
+                    $insert->bindParam(':createdDate', $createdDate);
+                    $insert->bindParam(':modifiedDate', $modifiedDate);
+                    $insert->bindParam(':isDeleted', $isDeleted);
+                    $insert->bindParam(':estimateQte', $estimateQteForPurchase);
+
+                    if($insert->execute()){
+                        $_SESSION['status'] = "Produit inséré avec succès";
+                        $_SESSION['status_code'] = "success";
+                    } else {
+                        $_SESSION['status'] = "Échec de l'insertion du produit";
+                        $_SESSION['status_code'] = "error";
+                    }
+                }
+            }
         }
-        else{
-          $insert=$pdo->prepare("insert into tbl_product (barcode, product,category,Supplier,unit,description,stock, purchaseprice, saleprice,image) 
-          values(:barcode,:product,:category,:supplier,:unit,:description,:stock,:pprice,:saleprice,:img)");
-
-          $insert->bindParam(':barcode',$barcode);
-          $insert->bindParam(':product',$product);
-          $insert->bindParam(':category',$category);
-          $insert->bindParam(':supplier',$supplier);
-          $insert->bindParam(':unit',$unit);
-          $insert->bindParam(':description',$description);
-          $insert->bindParam(':stock',$stock);
-          $insert->bindParam(':pprice',$purchaseprice);
-          $insert->bindParam(':saleprice',$saleprice);
-          $insert->bindParam(':img',$productimage);
-
-          if($insert->execute()){
-
-            $_SESSION['status']="Produit inséré avec succès";
-            $_SESSION['status_code']="success";
-          }
-          else{
-            $_SESSION['status']="Échec de l'insertion du produit";
-            $_SESSION['status_code']="error";
-          }
-        }        
-    }         
-  }   
-        
-  }else{
-      $_SESSION['status']="seuls jpg, jpeg, png et gif peuvent être téléchargés";
-      $_SESSION['status_code']="warning";
-  } 
+    } else {
+        $_SESSION['status'] = "Seuls jpg, jpeg, png et gif peuvent être téléchargés";
+        $_SESSION['status_code'] = "warning";
+    }
 }
 
 ?>
@@ -177,7 +197,7 @@ if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_ex
                       <select class="form-control" name="txtselect_supplier" required>
                         <option value="" disabled selected>Sélectionnez</option>
                           <?php
-                            $select=$pdo->prepare("select * from tbl_supplier order by SupplierId desc");
+                            $select=$pdo->prepare("select * from tSupplier order by SupplierId desc");
                             $select->execute();
 
                             while($row=$select->fetch(PDO::FETCH_ASSOC)){
@@ -196,7 +216,7 @@ if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_ex
                       <select class="form-control" name="txtselect_unit" required>
                         <option value="" disabled selected>Sélectionnez</option>
                           <?php
-                            $select=$pdo->prepare("select * from tbl_unit order by unitid desc");
+                            $select=$pdo->prepare("select * from tUnit order by unitid desc");
                             $select->execute();
 
                             while($row=$select->fetch(PDO::FETCH_ASSOC)){
@@ -214,7 +234,7 @@ if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_ex
                       <select class="form-control" name="txtselect_category" required>
                         <option value="" disabled selected>Sélectionnez</option>
                           <?php
-                            $select=$pdo->prepare("select * from tbl_category order by catid desc");
+                            $select=$pdo->prepare("select * from tCategory order by catid desc");
                             $select->execute();
 
                             while($row=$select->fetch(PDO::FETCH_ASSOC)){
@@ -244,6 +264,11 @@ if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_ex
                     <div class="form-group">
                       <label >Prix ​​de vente</label>
                       <input type="number" min="1" step="any" class="form-control" placeholder="Entrer le Prix ​​de vente" name="txtsaleprice" autocomplete="off" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Quantité estimée pour l'achat</label>
+                      <input type="number" min="1" step="any" class="form-control" placeholder="Entrez la quantité estimée" name="txtestimateqte" required>
                     </div>
 
                     <div class="form-group">
