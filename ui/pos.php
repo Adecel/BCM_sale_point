@@ -16,12 +16,10 @@
     }elseif ($_SESSION['role'] == 'Utilisateur') {
       include_once 'UserHeader.php';
     }else {
-      // Redirect to the login page or access denied page if role doesn't match
       header('location:../index.php');
       exit();
     }
   }else {
-    // If session 'role' is not set, redirect to the login page
     header('location:../index.php');
     exit();
   }
@@ -102,18 +100,9 @@
       }//end for loop
 
       header('location:OrderList.php');
-    }//1st if end
-
-  //var_dump($arr_total);
+    }
+    
   }
-
-//  if($_SESSION['role']=="Admin"){
-//    include_once'header.php';
-//  }
-//  else{
-//    include_once 'UserHeader.php';
-//  }
-
   ob_end_flush();
   $select=$pdo->prepare("select * from tbl_taxdis where taxdis_id =1");
   $select->execute();
