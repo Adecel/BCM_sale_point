@@ -3,6 +3,10 @@
 //ini_set('display_startup_errors', 1);
 //error_reporting(E_ALL);
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 include_once 'connectdb.php';
 session_start();
 
@@ -32,17 +36,20 @@ if(isset($_POST['btnsave'])){
     
     // Set IsDeleted to 0 (indicating it's not deleted)
     $isDeleted = 0;
-
-    $barcode       =$_POST['txtbarcode'];
-    $product       =$_POST['txtproductname'];
-    $supplier      =$_POST['txtselect_supplier'];
-    $unit          =$_POST['txtselect_unit'];
-    $category      =$_POST['txtselect_category'];
-    $description   =$_POST['txtdescription'];
-    $stock         =$_POST['txtstock'];
-    $purchaseprice =$_POST['txtpurchaseprice'];
-    $saleprice     =$_POST['txtsaleprice'];
     
+      // Get form data
+    $barcode       = $_POST['txtbarcode'];
+    $product       = $_POST['txtproductname'];
+    $supplier      = $_POST['txtselect_supplier'];
+    $unit          = $_POST['txtselect_unit'];
+    $category      = $_POST['txtselect_category'];
+    $productStatus      = $_POST['txtselect_productStatus'];
+    $description   = $_POST['txtdescription'];
+    $stock         = $_POST['txtstock'];
+    $purchaseprice = $_POST['txtpurchaseprice'];
+    $saleprice     = $_POST['txtsaleprice'];
+
+
     // Handle EstimateQteForPurchase (Assuming it comes from the form)
     $estimateQteForPurchase = $_POST['txtestimateqte'];
 
@@ -66,13 +73,14 @@ if(isset($_POST['btnsave'])){
 
                 // Insert without barcode (Barcode will be generated)
                 if(empty($barcode)){
-                    $insert = $pdo->prepare("INSERT INTO tbl_product 
-                    (barcode, product, category, Supplier, unit, description, stock, purchaseprice, saleprice, image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace) 
-                    VALUES (:barcode, :product, :category, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
+                    $insert = $pdo->prepare("INSERT INTO tProduct 
+                    (Barcode, ProductName, CategoryId, ProductStatusId, SupplierId, UnitId, Description, Stock, PurchasePrice, SalePrice, Image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace) 
+                    VALUES (:barcode, :product, :category, :productStatus, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
 
                     $insert->bindParam(':barcode', $barcode);
                     $insert->bindParam(':product', $product);
                     $insert->bindParam(':category', $category);
+                    $insert->bindParam(':productStatus', $productStatus);
                     $insert->bindParam(':supplier', $supplier);
                     $insert->bindParam(':unit', $unit);
                     $insert->bindParam(':description', $description);
@@ -94,7 +102,10 @@ if(isset($_POST['btnsave'])){
                     $newbarcode = $pid.date('Hisymd');
 
                     // Update product with new barcode
-                    $update = $pdo->prepare("UPDATE tbl_product SET barcode='$newbarcode' WHERE pid='$pid'");
+                    $update = $pdo->prepare("UPDATE tProduct SET Barcode='$newbarcode' WHERE ProductId='$pid'");
+                    // $update->bindParam(':newbarcode', $newbarcode);
+                    // $update->bindParam(':pid', $pid);
+                    // $update->execute();
 
                     if($update->execute()){
                         $_SESSION['status'] = "Produit inséré avec succès";
@@ -106,13 +117,14 @@ if(isset($_POST['btnsave'])){
 
                 // Insert with barcode
                 } else {
-                    $insert = $pdo->prepare("INSERT INTO tbl_product 
-                    (barcode, product, category, Supplier, unit, description, stock, purchaseprice, saleprice, image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace) 
-                    VALUES (:barcode, :product, :category, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
+                    $insert = $pdo->prepare("INSERT INTO tProduct 
+                    (Barcode, ProductName, CategoryId, ProductStatusId, SupplierId, UnitId, Description, Stock, PurchasePrice, SalePrice, Image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace)
+                    VALUES (:barcode, :product, :category, :productStatus, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
 
                     $insert->bindParam(':barcode', $barcode);
                     $insert->bindParam(':product', $product);
                     $insert->bindParam(':category', $category);
+                    $insert->bindParam(':productStatus', $productStatus);
                     $insert->bindParam(':supplier', $supplier);
                     $insert->bindParam(':unit', $unit);
                     $insert->bindParam(':description', $description);
@@ -197,13 +209,13 @@ if(isset($_POST['btnsave'])){
                       <select class="form-control" name="txtselect_supplier" required>
                         <option value="" disabled selected>Sélectionnez</option>
                           <?php
-                            $select=$pdo->prepare("select * from tSupplier order by SupplierId desc");
+                            $select=$pdo->prepare("SELECT * FROM tSupplier WHERE IsDeleted = 0 ORDER BY SupplierId DESC");
                             $select->execute();
 
                             while($row=$select->fetch(PDO::FETCH_ASSOC)){
                               extract($row);
                               ?>
-                                <option><?php echo $row['SupplierName'];?></option>
+                                <option value="<?php echo $row['SupplierId'];?>"><?php echo $row['SupplierName'];?></option>
                               <?php
 
                             }
@@ -216,13 +228,13 @@ if(isset($_POST['btnsave'])){
                       <select class="form-control" name="txtselect_unit" required>
                         <option value="" disabled selected>Sélectionnez</option>
                           <?php
-                            $select=$pdo->prepare("select * from tUnit order by unitid desc");
+                            $select=$pdo->prepare("SELECT * FROM tUnit WHERE IsDeleted = 0 ORDER BY UnitId DESC");
                             $select->execute();
 
                             while($row=$select->fetch(PDO::FETCH_ASSOC)){
                               extract($row);
                               ?>
-                                <option><?php echo $row['unitname'];?></option>
+                                <option value="<?php echo $row['UnitId'];?>"><?php echo $row['UnitName'];?></option>
                               <?php
                             }
                           ?>
@@ -234,13 +246,32 @@ if(isset($_POST['btnsave'])){
                       <select class="form-control" name="txtselect_category" required>
                         <option value="" disabled selected>Sélectionnez</option>
                           <?php
-                            $select=$pdo->prepare("select * from tCategory order by catid desc");
+                            $select=$pdo->prepare("SELECT * FROM tCategory WHERE IsDeleted = 0 ORDER BY CategoryId DESC");
                             $select->execute();
 
                             while($row=$select->fetch(PDO::FETCH_ASSOC)){
                               extract($row);
                               ?>
-                                <option><?php echo $row['category'];?></option>
+                                <option value="<?php echo $row['CategoryId'];?>"><?php echo $row['CategoryName'];?></option>
+                              <?php
+                              }
+                          ?>
+                        </select>
+                    </div>
+
+                    <!-- productStatus -->
+                    <div class="form-group">
+                      <label>Status du Produit </label>
+                      <select class="form-control" name="txtselect_productStatus" required>
+                        <option value="" disabled selected>Sélectionnez</option>
+                          <?php
+                            $select=$pdo->prepare("SELECT * FROM tProductStatus WHERE IsDeleted = 0 ORDER BY ProductStatusId DESC");
+                            $select->execute();
+
+                            while($row=$select->fetch(PDO::FETCH_ASSOC)){
+                              extract($row);
+                              ?>
+                                <option value="<?php echo $row['ProductStatusId'];?>"><?php echo $row['Description'];?></option>
                               <?php
                               }
                           ?>

@@ -241,10 +241,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </li>
 
           <li class="nav-item">
-            <a href="unit.php" class="nav-link">
+            <a href="Unit.php" class="nav-link">
             <i class="nav-icon fas fa-weight"></i>
             <p>
                 Gérer les unités
+              
+              </p>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a href="ProductStatus.php" class="nav-link">
+            <i class="nav-icon fas fa-weight"></i>
+            <p>
+                Gérer les Produits
               
               </p>
             </a>

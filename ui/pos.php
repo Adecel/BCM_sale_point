@@ -1,37 +1,39 @@
 <?php
+
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
+  
   ob_start();
   include_once 'connectdb.php';
   session_start();
 
-// Check if the session 'role' is set, and load the appropriate header based on the role
-if (isset($_SESSION['role'])) {
-    if ($_SESSION['role'] == 'Admin') {
-        include_once 'header.php';
-    } elseif ($_SESSION['role'] == 'Manager') {
-        include_once 'ManagerHeader.php';
-    } elseif ($_SESSION['role'] == 'Utilisateur') {
-        include_once 'UserHeader.php';
-    } else {
-        // Redirect to the login page or access denied page if role doesn't match
-        header('location:../index.php');
-        exit();
+  if(isset($_SESSION['role'])) {
+    if($_SESSION['role'] == 'Admin') {
+      include_once 'header.php';
+    }elseif ($_SESSION['role'] == 'Manager') { 
+      include_once 'ManagerHeader.php';
+    }elseif ($_SESSION['role'] == 'Utilisateur') {
+      include_once 'UserHeader.php';
+    }else {
+      // Redirect to the login page or access denied page if role doesn't match
+      header('location:../index.php');
+      exit();
     }
-} else {
+  }else {
     // If session 'role' is not set, redirect to the login page
     header('location:../index.php');
     exit();
-}
+  }
 
   function fill_product($pdo){
     $output='';
-    $select=$pdo->prepare("select * from tbl_product order by product asc");
-
+    $select=$pdo->prepare("SELECT * FROM tProduct WHERE IsDeleted = 0 ORDER BY ProductId ASC");
     $select->execute();
-
     $result=$select->fetchAll();
 
     foreach($result as $row){
-      $output.='<option value="'.$row["pid"].'">'.$row["product"].'</option>';
+      $output.='<option value="'.$row["ProductId"].'">'.$row["ProductName"].'</option>';
     }
     return $output;
   }
@@ -47,15 +49,16 @@ if (isset($_SESSION['role'])) {
     $due           = $_POST['txtdue'];
     $paid          =$_POST['txtpaid'];
 
-    $arr_pid     = $_POST['pid_arr'];
-    $arr_barcode = $_POST['barcode_arr'];
-    $arr_name    = $_POST['product_arr'];
-    $arr_stock   = $_POST['stock_c_arr'];
+    $arr_ProductId     = $_POST['ProductId_arr'];
+    $arr_Barcode = $_POST['Barcode_arr'];
+    $arr_name    = $_POST['ProductName_arr'];
+    $arr_Stock   = $_POST['Stock_c_arr'];
     $arr_qty     = $_POST['quantity_arr'];
     $arr_price   = $_POST['price_c_arr'];
-    $arr_total   = $_POST['saleprice_arr'];
+    $arr_total   = $_POST['SalePrice_arr'];
 
-    $insert=$pdo->prepare("insert into tbl_invoice (order_date,subtotal,total,payment_type,due,paid) values(:orderdate,:subtotal,:total,:payment_type,:due,:paid)");
+    $insert=$pdo->prepare("insert into tbl_invoice (order_date,subtotal,total,payment_type,due,paid) 
+    values(:orderdate,:subtotal,:total,:payment_type,:due,:paid)");
 
     $insert->bindParam(':orderdate',$orderdate);
     $insert->bindParam(':subtotal',$subtotal);
@@ -72,24 +75,25 @@ if (isset($_SESSION['role'])) {
     $invoice_id=$pdo->lastInsertId();
 
     if($invoice_id!=null){
-      for($i=0;$i<count($arr_pid);$i++){
-        $rem_qty=$arr_stock[$i]-$arr_qty[$i];
+      for($i=0;$i<count($arr_ProductId);$i++){
+        $rem_qty=$arr_Stock[$i]-$arr_qty[$i];
         if($rem_qty<0){
           return"Order is not completed";
         }
         else{
-          $update=$pdo->prepare("update tbl_product SET stock='$rem_qty' where pid='".$arr_pid[$i]."'");
+          $update=$pdo->prepare("update tProduct SET Stock='$rem_qty' where ProductId='".$arr_ProductId[$i]."'");
           $update->execute();
         }//else end here
 
-        $insert=$pdo->prepare("insert into tbl_invoice_details (invoice_id,barcode,product_id,product_name,qty,rate,saleprice,order_date) values (:invid,:barcode,:pid,:name,:qty,:rate,:saleprice,:order_date)");
+        $insert=$pdo->prepare("insert into tbl_invoice_details (invoice_id,barcode,product_id,product_name,qty,rate,saleprice,order_date) 
+        values (:invid,:Barcode,:ProductId,:name,:qty,:rate,:SalePrice,:order_date)");
         $insert->bindParam(':invid',$invoice_id);
-        $insert->bindParam(':barcode',$arr_barcode[$i]);
-        $insert->bindParam(':pid',$arr_pid[$i]);
+        $insert->bindParam(':Barcode',$arr_Barcode[$i]);
+        $insert->bindParam(':ProductId',$arr_ProductId[$i]);
         $insert->bindParam(':name',$arr_name[$i]);
         $insert->bindParam(':qty',$arr_qty[$i]);
         $insert->bindParam(':rate',$arr_price[$i]);
-        $insert->bindParam(':saleprice',$arr_total[$i]);
+        $insert->bindParam(':SalePrice',$arr_total[$i]);
         $insert->bindParam(':order_date',$orderdate);
 
         if(!$insert->execute()){
@@ -100,7 +104,7 @@ if (isset($_SESSION['role'])) {
       header('location:OrderList.php');
     }//1st if end
 
-  var_dump($arr_total);
+  //var_dump($arr_total);
   }
 
 //  if($_SESSION['role']=="Admin"){
@@ -111,7 +115,6 @@ if (isset($_SESSION['role'])) {
 //  }
 
   ob_end_flush();
-
   $select=$pdo->prepare("select * from tbl_taxdis where taxdis_id =1");
   $select->execute();
   $row=$select->fetch(PDO::FETCH_OBJ);
@@ -120,7 +123,6 @@ if (isset($_SESSION['role'])) {
 
 
 <style type="text/css">
-
   .tableFixHead{
     overflow: scroll;
     height: 520px;
@@ -134,7 +136,6 @@ if (isset($_SESSION['role'])) {
   table {border-collapse:collapse; width: 100px;}
   th,td {padding:8px 16px;}
   th{background: #eee;}
-
 </style>
 
 <!-- Content Wrapper. Contains page content -->
@@ -175,7 +176,7 @@ if (isset($_SESSION['role'])) {
                     <div class="input-group-prepend">
                       <span class="input-group-text"><i class="fa fa-barcode"></i></span>
                     </div>
-                    <input type="text" class="form-control" placeholder="Scanner le code-barres" autocomplete="off" name="txtbarcode" id="txtbarcode_id">
+                    <input type="text" class="form-control" placeholder="Scanner le code-barres" autocomplete="off" name="txtBarcode" id="txtBarcode_id">
                   </div>
 
                   <form action="" method="post" name="">
@@ -287,20 +288,13 @@ if (isset($_SESSION['role'])) {
       </form>
     </div>
   <!-- /.col-md-6 -->
-  </div>
-<!-- /.row -->
-</div><!-- /.container-fluid -->
 </div>
-<!-- /.content -->
-</div>
-<!-- /.content-wrapper -->
 
 <?php
   include_once "footer.php";
 ?>
 
 <script>
- 
   //Initialize Select2 Elements
   $('.select2').select2()
 
@@ -309,179 +303,142 @@ if (isset($_SESSION['role'])) {
     theme: 'bootstrap4'
   })  
 
-  var productarr=[];
+  var ProductNamearr=[];
 
   $(function() {
+    $('#txtBarcode_id').on('change', function() {
+      var Barcode = $("#txtBarcode_id").val();
+      $.ajax({
+        url:"getproduct.php",
+        method:"get",
+        dataType: "json",
+        data:{id:Barcode},
 
-  $('#txtbarcode_id').on('change', function() {
-    var barcode = $("#txtbarcode_id").val();
-    $.ajax({
-    url:"getproduct.php",
-    method:"get",
-    dataType: "json",
-    data:{id:barcode},
-    success:function(data){
-    //alert("pid");
+        success:function(data){
+          if(jQuery.inArray(data["ProductId"],ProductNamearr)!== -1){
 
-    //console.log(data);
+            var actualqty = parseInt($('#qty_id'+data["ProductId"]).val())+1;
+            $('#qty_id'+data["ProductId"]).val(actualqty);
 
-    if(jQuery.inArray(data["pid"],productarr)!== -1){
+            var SalePrice=parseInt(actualqty)*data["SalePrice"];
 
-      var actualqty = parseInt($('#qty_id'+data["pid"]).val())+1;
-      $('#qty_id'+data["pid"]).val(actualqty);
+            $('#SalePrice_id'+data["ProductId"]).html(SalePrice);
+            $('#SalePrice_idd'+data["ProductId"]).val(SalePrice);
 
-      var saleprice=parseInt(actualqty)*data["saleprice"];
+            // $("#txtBarcode_id").val("");
+            calculate(0,0);
 
-      $('#saleprice_id'+data["pid"]).html(saleprice);
-      $('#saleprice_idd'+data["pid"]).val(saleprice);
+          }else{
+            addrow(data["ProductId"],data["ProductName"],data["SalePrice"],data["Stock"],data["Barcode"]);
+            ProductNamearr.push(data["ProductId"]);
 
-      // $("#txtbarcode_id").val("");
-      calculate(0,0);
+            //$("#txtBarcode_id").val("");
 
-    }else{
+            function addrow(ProductId,ProductName,SalePrice,Stock,Barcode){
+              var tr='<tr>'+
+              '<input type="hidden" class="form-control Barcode" name="Barcode_arr[]" id="Barcode_id'+Barcode+'" value="'+Barcode+'" >'+
 
-      addrow(data["pid"],data["product"],data["saleprice"],data["stock"],data["barcode"]);
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><class="form-control ProductName_c" name="ProductName_arr[]" <span class="badge badge-dark">'+ProductName+'</span><input type="hidden" class="form-control ProductId" name="ProductId_arr[]" value="'+ProductId+'" ><input type="hidden" class="form-control ProductName" name="ProductName_arr[]" value="'+ProductName+'" >  </td>'+
 
-      productarr.push(data["pid"]);
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-primary Stocklbl" name="Stock_arr[]" id="Stock_id'+ProductId+'">'+Stock+'</span><input type="hidden" class="form-control Stock_c" name="Stock_c_arr[]" id="Stock_idd'+ProductId+'" value="'+Stock+'"></td>'+
 
-      //$("#txtbarcode_id").val("");
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-warning price" name="price_arr[]" id="price_id'+ProductId+'">'+SalePrice+'</span><input type="hidden" class="form-control price_c" name="price_c_arr[]" id="price_idd'+ProductId+'" value="'+SalePrice+'"></td>'+
 
-      function addrow(pid,product,saleprice,stock,barcode){
+              '<td><input type="text" class="form-control qty" name="quantity_arr[]" id="qty_id'+ProductId+'" value="'+1+'" size="1"></td>'+
 
-      var tr='<tr>'+
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-success totalamt" name="netamt_arr[]" id="SalePrice_id'+ProductId+'">'+SalePrice+'</span><input type="hidden" class="form-control SalePrice" name="SalePrice_arr[]" id="SalePrice_idd'+ProductId+'" value="'+SalePrice+'"></td>'+
 
-      '<input type="hidden" class="form-control barcode" name="barcode_arr[]" id="barcode_id'+barcode+'" value="'+barcode+'" >'+
+              //remove button code start here
 
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><class="form-control product_c" name="product_arr[]" <span class="badge badge-dark">'+product+'</span><input type="hidden" class="form-control pid" name="pid_arr[]" value="'+pid+'" ><input type="hidden" class="form-control product" name="product_arr[]" value="'+product+'" >  </td>'+
+              // '<td style="text-align:left; vertical-align:middle;"><center><name="remove" class"btnremove" data-id="'+ProductId+'"><span class="fas fa-trash" style="color:red"></span></center></td>'+
+              // '</tr>';
 
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-primary stocklbl" name="stock_arr[]" id="stock_id'+pid+'">'+stock+'</span><input type="hidden" class="form-control stock_c" name="stock_c_arr[]" id="stock_idd'+pid+'" value="'+stock+'"></td>'+
-
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-warning price" name="price_arr[]" id="price_id'+pid+'">'+saleprice+'</span><input type="hidden" class="form-control price_c" name="price_c_arr[]" id="price_idd'+pid+'" value="'+saleprice+'"></td>'+
-
-      '<td><input type="text" class="form-control qty" name="quantity_arr[]" id="qty_id'+pid+'" value="'+1+'" size="1"></td>'+
-
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-success totalamt" name="netamt_arr[]" id="saleprice_id'+pid+'">'+saleprice+'</span><input type="hidden" class="form-control saleprice" name="saleprice_arr[]" id="saleprice_idd'+pid+'" value="'+saleprice+'"></td>'+
-
-      //remove button code start here
-
-      // '<td style="text-align:left; vertical-align:middle;"><center><name="remove" class"btnremove" data-id="'+pid+'"><span class="fas fa-trash" style="color:red"></span></center></td>'+
-      // '</tr>';
-
-      '<td><center><button type="button" name="remove" class="btn btn-danger btn-sm btnremove" data-id="'+pid+'"><span class="fas fa-trash"></span></center></td>'+
+              '<td><center><button type="button" name="remove" class="btn btn-danger btn-sm btnremove" data-id="'+ProductId+'"><span class="fas fa-trash"></span></center></td>'+
 
 
-      '</tr>';
+              '</tr>';
 
-      $('.details').append(tr);
-      calculate(0,0);
-      }//end function addrow
-    }
-    $("#txtbarcode_id").val("");
-    }   // end of success function
-    })  // end of ajax request
+              $('.details').append(tr);
+              calculate(0,0);
+            }//end function addrow
+          }
+
+          $("#txtBarcode_id").val("");
+        }   // end of success function
+      })  // end of ajax request
     })  // end of onchange function
-    }); // end of main function
+  }); // end of main function
 
-    var productarr=[];
+  var ProductNamearr=[];
 
-    $(function() {
-
+  $(function() {
     $('.select2').on('change', function() {
+      var Productid = $(".select2").val();
+      $.ajax({
+        url:"getproduct.php",
+        method:"get",
+        dataType: "json",
+        data:{id:Productid},
+        success:function(data){
+          if(jQuery.inArray(data["ProductId"],ProductNamearr)!== -1){
+            var actualqty = parseInt($('#qty_id'+data["ProductId"]).val())+1;
+            $('#qty_id'+data["ProductId"]).val(actualqty);
+            var SalePrice=parseInt(actualqty)*data["SalePrice"];
+            $('#SalePrice_id'+data["ProductId"]).html(SalePrice);
+            $('#SalePrice_idd'+data["ProductId"]).val(SalePrice);
 
+            calculate(0,0);
+          }else{
+            addrow(data["ProductId"],data["ProductName"],data["SalePrice"],data["Stock"],data["Barcode"]);
+            ProductNamearr.push(data["ProductId"]);
+            function addrow(ProductId,ProductName,SalePrice,Stock,Barcode){
+              var tr='<tr>'+
+              '<input type="hidden" class="form-control Barcode" name="Barcode_arr[]" id="Barcode_id'+Barcode+'" value="'+Barcode+'" >'+
 
-    var productid = $(".select2").val();
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><class="form-control ProductName_c" name="ProductName_arr[]" <span class="badge badge-dark">'+ProductName+'</span><input type="hidden" class="form-control ProductId" name="ProductId_arr[]" value="'+ProductId+'" ><input type="hidden" class="form-control ProductName" name="ProductName_arr[]" value="'+ProductName+'" >  </td>'+
 
-    $.ajax({
-    url:"getproduct.php",
-    method:"get",
-    dataType: "json",
-    data:{id:productid},
-    success:function(data){
-    //alert("pid");
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-primary Stocklbl" name="Stock_arr[]" id="Stock_id'+ProductId+'">'+Stock+'</span><input type="hidden" class="form-control Stock_c" name="Stock_c_arr[]" id="Stock_idd'+ProductId+'" value="'+Stock+'"></td>'+
 
-    //console.log(data);
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-warning price" name="price_arr[]" id="price_id'+ProductId+'">'+SalePrice+'</span><input type="hidden" class="form-control price_c" name="price_c_arr[]" id="price_idd'+ProductId+'" value="'+SalePrice+'"></td>'+
 
-    if(jQuery.inArray(data["pid"],productarr)!== -1){
+              '<td><input type="text" class="form-control qty" name="quantity_arr[]" id="qty_id'+ProductId+'" value="'+1+'" size="1"></td>'+
 
-      var actualqty = parseInt($('#qty_id'+data["pid"]).val())+1;
-      $('#qty_id'+data["pid"]).val(actualqty);
+              '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-success totalamt" name="netamt_arr[]" id="SalePrice_id'+ProductId+'">'+SalePrice+'</span><input type="hidden" class="form-control SalePrice" name="SalePrice_arr[]" id="SalePrice_idd'+ProductId+'" value="'+SalePrice+'"></td>'+
 
-      var saleprice=parseInt(actualqty)*data["saleprice"];
+              //remove button code start here
+              // '<td style="text-align:center; vertical-align:middle;"><center><name="remove" class"btnremove" data-id="'+ProductId+'"><span class="fas fa-trash" style="color:red"></span></center></td>'+
+              '<td><center><button type="button" name="remove" class="btn btn-danger btn-sm btnremove" data-id="'+ProductId+'"><span class="fas fa-trash"></span></center></td>'+
+              '</tr>';               
+              $('.details').append(tr);
+              calculate(0,0);
 
-      $('#saleprice_id'+data["pid"]).html(saleprice);
-      $('#saleprice_idd'+data["pid"]).val(saleprice);
-
-      //$("#txtbarcode_id").val("");
-
-      calculate(0,0);
-    }else{
-
-      addrow(data["pid"],data["product"],data["saleprice"],data["stock"],data["barcode"]);
-
-      productarr.push(data["pid"]);
-
-      //$("#txtbarcode_id").val("");
-
-      function addrow(pid,product,saleprice,stock,barcode){
-
-      var tr='<tr>'+
-      '<input type="hidden" class="form-control barcode" name="barcode_arr[]" id="barcode_id'+barcode+'" value="'+barcode+'" >'+
-
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><class="form-control product_c" name="product_arr[]" <span class="badge badge-dark">'+product+'</span><input type="hidden" class="form-control pid" name="pid_arr[]" value="'+pid+'" ><input type="hidden" class="form-control product" name="product_arr[]" value="'+product+'" >  </td>'+
-
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-primary stocklbl" name="stock_arr[]" id="stock_id'+pid+'">'+stock+'</span><input type="hidden" class="form-control stock_c" name="stock_c_arr[]" id="stock_idd'+pid+'" value="'+stock+'"></td>'+
-
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-warning price" name="price_arr[]" id="price_id'+pid+'">'+saleprice+'</span><input type="hidden" class="form-control price_c" name="price_c_arr[]" id="price_idd'+pid+'" value="'+saleprice+'"></td>'+
-
-      '<td><input type="text" class="form-control qty" name="quantity_arr[]" id="qty_id'+pid+'" value="'+1+'" size="1"></td>'+
-
-      '<td style="text-align:left; vertical-align:middle; font-size:17px;"><span class="badge badge-success totalamt" name="netamt_arr[]" id="saleprice_id'+pid+'">'+saleprice+'</span><input type="hidden" class="form-control saleprice" name="saleprice_arr[]" id="saleprice_idd'+pid+'" value="'+saleprice+'"></td>'+
-
-      //remove button code start here
-
-      // '<td style="text-align:center; vertical-align:middle;"><center><name="remove" class"btnremove" data-id="'+pid+'"><span class="fas fa-trash" style="color:red"></span></center></td>'+
-
-      '<td><center><button type="button" name="remove" class="btn btn-danger btn-sm btnremove" data-id="'+pid+'"><span class="fas fa-trash"></span></center></td>'+
-
-
-      '</tr>';
-
-                      
-      $('.details').append(tr);
-      calculate(0,0);
-
-      }//end function addrow
-    }
-    $("#txtbarcode_id").val("");
-    }   // end of success function
-    })  // end of ajax request
+            }//end function addrow
+          }
+          $("#txtBarcode_id").val("");
+        }   // end of success function
+      })  // end of ajax request
     })  // end of onchange function
-    }); // end of main function
+  }); // end of main function
 
-    $("#itemtable").delegate(".qty" ,"keyup change", function(){
-
+  $("#itemtable").delegate(".qty" ,"keyup change", function(){
     var quantity=$(this);
     var tr = $(this).parent().parent();
 
-    if((quantity.val()-0)>(tr.find(".stock_c").val()-0)){
+    if((quantity.val()-0)>(tr.find(".Stock_c").val()-0)){
+      Swal.fire("ALERTE!", "Cette quantité est plus que le disponible", "warning");
+      quantity.val(1);
 
-    Swal.fire("ALERTE!", "Cette quantité est plus que le disponible", "warning");
-    quantity.val(1);
-
-    tr.find(".totalamt").text(quantity.val() * tr.find(".price").text());
-
-    tr.find(".saleprice").val(quantity.val() * tr.find(".price").text());
-    calculate(0,0);
+      tr.find(".totalamt").text(quantity.val() * tr.find(".price").text());
+      tr.find(".SalePrice").val(quantity.val() * tr.find(".price").text());
+      calculate(0,0);
     }else{
-    tr.find(".totalamt").text(quantity.val() * tr.find(".price").text());
-
-    tr.find(".saleprice").val(quantity.val() * tr.find(".price").text());
-    calculate(0,0);
+      tr.find(".totalamt").text(quantity.val() * tr.find(".price").text());
+      tr.find(".SalePrice").val(quantity.val() * tr.find(".price").text());
+      calculate(0,0);
     }
-    });
+  });
 
-    function calculate(dis,paid){
-
+  function calculate(dis,paid){
     var subtotal=0;
     var discount=dis;
     var sgst=0;
@@ -490,74 +447,56 @@ if (isset($_SESSION['role'])) {
     var paid_amt=paid;
     var due=0;
 
-$(".saleprice").each(function(){
+    $(".SalePrice").each(function(){
+      subtotal=subtotal+($(this).val()*1);
+    });
 
-  subtotal=subtotal+($(this).val()*1);
-});
+    $("#txtsubtotal_id").val(subtotal.toFixed(2));
 
-$("#txtsubtotal_id").val(subtotal.toFixed(2));
+    sgst=parseFloat($("#txtsgst_id_p").val());
+    cgst=parseFloat($("#txtcgst_id_p").val());
+    discount=parseFloat($("#txtdiscount_p").val());
 
-sgst=parseFloat($("#txtsgst_id_p").val());
+    sgst=sgst/100;
+    sgst=sgst*subtotal;
 
-cgst=parseFloat($("#txtcgst_id_p").val());
+    cgst=cgst/100;
+    cgst=cgst*subtotal;
 
-discount=parseFloat($("#txtdiscount_p").val());
+    discount=discount/100;
+    discount=discount*subtotal;
 
-sgst=sgst/100;
-sgst=sgst*subtotal;
+    $("#txtsgst_id_n").val(sgst.toFixed(2));
+    $("#txtcgst_id_n").val(cgst.toFixed(2));
+    $("#txtdiscount_n").val(discount.toFixed(2));
 
-cgst=cgst/100;
-cgst=cgst*subtotal;
+    // total=sgst+cgst+subtotal-discount;
+    total = subtotal;
+    due=total-paid_amt;
 
-discount=discount/100;
-discount=discount*subtotal;
+    $("#txttotal").val(total.toFixed(2));
+    $("#txtdue").val(due.toFixed(2));
+  }  //end calculate function
 
-$("#txtsgst_id_n").val(sgst.toFixed(2));
+  $("#txtdiscount_p").keyup(function(){
+    var discount=$(this).val();
+    calculate(discount,0);
+  });
 
-$("#txtcgst_id_n").val(cgst.toFixed(2));
+  $("#txtpaid").keyup(function(){
+    var paid=$(this).val();
+    var discount=$("#txtdiscount_p").val();
+    calculate(discount,paid);
+  });
 
-$("#txtdiscount_n").val(discount.toFixed(2));
+  $(document).on('click','.btnremove',function(){
+    var removed=$(this).attr("data-id");
+    ProductNamearr=jQuery.grep(ProductNamearr,function(value){
+      return value!=removed;
+      calculate(0,0);
+    })
 
-
-// total=sgst+cgst+subtotal-discount;
-total = subtotal;
-due=total-paid_amt;
-
-
-$("#txttotal").val(total.toFixed(2));
-
-$("#txtdue").val(due.toFixed(2));
-
-}  //end calculate function
-
-
-$("#txtdiscount_p").keyup(function(){
-
-var discount=$(this).val();
-
-calculate(discount,0);
-
-});
-
-$("#txtpaid").keyup(function(){
-
-var paid=$(this).val();
-var discount=$("#txtdiscount_p").val();
-calculate(discount,paid);
-
-});
-
-
-$(document).on('click','.btnremove',function(){
-
-var removed=$(this).attr("data-id");
-productarr=jQuery.grep(productarr,function(value){
-
-  return value!=removed;
-  calculate(0,0);
-})
-
-$(this).closest('tr').remove();
-calculate(0,0);
-});
+    $(this).closest('tr').remove();
+    calculate(0,0);
+  });
 </script>

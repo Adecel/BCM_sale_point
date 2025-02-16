@@ -67,7 +67,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
 
                                 <tbody>
                                 <?php
-                                $select = $pdo->prepare("SELECT * FROM tbl_product ORDER BY pid ASC");
+                                $select = $pdo->prepare("SELECT * FROM tProduct WHERE IsDeleted = 0 ORDER BY ProductId DESC");
                                 $select->execute();
 
                                 while ($row = $select->fetch(PDO::FETCH_OBJ)) {
@@ -81,28 +81,28 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin') {
 
                                     echo '
                         <tr style="' . $rowColor . '">
-                          <td>' . $row->barcode . '</td>
-                          <td>' . $row->product . '</td>
-                          <td>' . $row->Supplier . '</td>
-                          <td>' . $row->unit . '</td>
-                          <td>' . $row->category . '</td>
-                          <td>' . $row->description . '</td>
-                          <td>' . $row->stock . '</td>
-                          <td>' . $row->purchaseprice . '</td>
-                          <td>' . $row->saleprice . '</td>
-                          <td><img src="productimages/' . $row->image . '" class="img-rounded" width="40px" height="40px" /></td>
+                          <td>' . $row->Barcode . '</td>
+                          <td>' . $row->ProductName . '</td>
+                          <td>' . $row->SupplierId . '</td>
+                          <td>' . $row->UnitId . '</td>
+                          <td>' . $row->CategoryId . '</td>
+                          <td>' . $row->Description . '</td>
+                          <td>' . $row->Stock . '</td>
+                          <td>' . $row->PurchasePrice . '</td>
+                          <td>' . $row->SalePrice . '</td>
+                          <td><img src="productimages/' . $row->Image . '" class="img-rounded" width="40px" height="40px" /></td>
                           <td>
                             <div class="btn-group">   
-                              <a href="printbarcode.php?id=' . $row->pid . '" class="btn btn-dark btn-xs" role="button">
+                              <a href="PrintBarcode.php?id=' . $row->ProductId . '" class="btn btn-dark btn-xs" role="button">
                                 <span class="fa fa-barcode" style="color:#ffffff" data-toggle="tooltip" title="Print Barcode"></span>
                               </a>
-                              <a href="viewproduct.php?id=' . $row->pid . '" class="btn btn-warning btn-xs" role="button">
+                              <a href="ViewProduct.php?id=' . $row->ProductId . '" class="btn btn-warning btn-xs" role="button">
                                 <span class="fa fa-eye" style="color:#ffffff" data-toggle="tooltip" title="View Product"></span>
                               </a>
-                              <a href="editproduct.php?id=' . $row->pid . '" class="btn btn-success btn-xs" role="button">
+                              <a href="Editproduct.php?id=' . $row->ProductId . '" class="btn btn-success btn-xs" role="button">
                                 <span class="fa fa-edit" style="color:#ffffff" data-toggle="tooltip" title="Edit Product"></span>
                               </a>
-                              <button id="' . $row->pid . '" class="btn btn-danger btn-xs btndelete">
+                              <button id="' . $row->ProductId . '" class="btn btn-danger btn-xs btndelete">
                                 <span class="fa fa-trash" style="color:#ffffff" data-toggle="tooltip" title="Delete Product"></span>
                               </button>
                             </div>
