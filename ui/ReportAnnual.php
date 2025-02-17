@@ -63,15 +63,15 @@ if (isset($_SESSION['role'])) {
                                 <?php
                                 $stmt = $pdo->prepare("
                       SELECT 
-                          p.product AS ProductName,
-                          p.barcode AS Barcode,
-                          p.category AS Category,
-                          p.stock AS Stock,
+                          p.ProductName AS ProductName,
+                          p.Barcode AS Barcode,
+                          p.CategoryId AS Category,
+                          p.Stock AS Stock,
                           SUM(id.qty) AS QuantitySold,
                           SUM(id.qty * id.saleprice) AS TotalSales,
                           DATE_FORMAT(i.order_date, '%Y') AS SaleYear
                       FROM 
-                          tbl_product p
+                          tProduct p
                       LEFT JOIN 
                           tbl_invoice_details id ON p.pid = id.product_id
                       LEFT JOIN 
