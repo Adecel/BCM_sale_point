@@ -71,7 +71,7 @@ if (isset($_SESSION['role'])) {
                                       SUM(id.qty * id.saleprice) AS TotalSales,
                                       DATE(i.order_date) AS SaleDate
                                   FROM 
-                                      tbl_product p
+                                      tProduct p
                                   LEFT JOIN 
                                       tbl_invoice_details id ON p.pid = id.product_id
                                   LEFT JOIN 

@@ -52,10 +52,10 @@ if (isset($_SESSION['role'])) {
                                     <th>Product Name</th>
                                     <th>Barcode</th>
                                     <th>Category</th>
-                                    <th>Stock</th>
+                                    <th>Initial Stock</th>
+                                    <th>Stock Restant</th>
                                     <th>Status</th>
                                     <th>Number of Times Needed</th>
-                                    <th>Product Status</th>
                                     <th>Amount</th>
                                     <th>Total Price</th>
                                 </tr>
@@ -66,52 +66,68 @@ if (isset($_SESSION['role'])) {
 
                                 // Fetch products with low stock
                                 $stmt = $pdo->prepare("
-                                    SELECT
-                                        product AS ProductName,
-                                        barcode,
-                                        category AS Category,
-                                        stock AS Stock,
+                                    (SELECT 
+                                        P.ProductName,
+                                        P.Barcode,
+                                        C.CategoryName AS Category,
+                                        AP.Stock AS StockIntial,
+                                        P.Stock,
                                         'Stock Status' AS Source,
                                         NULL AS NumberOfTimes,
                                         CASE 
-                                            WHEN stock = 0 THEN 'Fini' 
-                                            ELSE 'Presque fini' 
+                                            WHEN P.Stock = 0 THEN 'Rupture de stock' 
+                                            WHEN P.Stock <= 10 THEN 'Presque fini' 
                                         END AS Status,
-                                        purchaseprice AS Amount,  -- Amount for tbl_product
-                                        (purchaseprice * 10) AS TotalPrice  -- Calculate total price for tbl_product
-                                    FROM
-                                        tbl_product
-                                    WHERE
-                                        stock <= 10
+                                        PS.Description AS ProductStatus,
+                                        P.PurchasePrice AS Amount,
+                                        (P.PurchasePrice * AP.Stock) AS TotalPrice
+                                    FROM 
+                                        tProduct P
+                                        LEFT JOIN tAuditProduct AP ON P.ProductId = AP.ProductId  AND AP.IsDeleted = 0
+                                        LEFT JOIN tCategory C ON P.CategoryId = C.CategoryId AND C.IsDeleted = 0
+                                        LEFT JOIN tProductStatus PS ON P.ProductStatusId = PS.ProductStatusId AND PS.IsDeleted = 0
+                                    WHERE 
+                                        P.Stock <= 10
+                                    ORDER BY 
+                                        FIELD(PS.Description, 'Rupture de stock', 'Meilleure vente', 'Promotion', 'En attente de livraison', 'En stock', 'Obsolète')
+                                    )
                                     UNION ALL
-                                    SELECT
-                                        ProductName,
+                                    (SELECT
+                                        PIN.ProductInNeedName AS ProductName,
                                         NULL AS Barcode,
                                         NULL AS Category,
+                                        NULL AS StockIntial,
                                         NULL AS Stock,
                                         'Products in Need' AS Source,
-                                        NumberOfTimes,
-                                        'To be added' AS Status,
-                                        EstimatePrice AS Amount,  -- Amount for tbl_ProductInNeed
-                                        (EstimatePrice * NumberOfTimes) AS TotalPrice  -- Calculate total price for tbl_ProductInNeed
-                                    FROM
-                                        tbl_ProductInNeed
-                                    WHERE
-                                        IsDeleted = 0
-                                    ORDER BY
-                                        ProductName ASC
-                                ");
+                                        PIN.NumberOfTimes,
+                                        CASE 
+                                            WHEN PIN.ProductInNeedStatusId = 3 THEN 'Haut Demande'
+                                            WHEN PIN.ProductInNeedStatusId = 1 THEN 'Faible'
+                                            ELSE 'Normal'
+                                        END AS Status,
+                                        NULL AS ProductStatus,
+                                        PIN.EstimatePrice AS Amount,
+                                        (PIN.EstimatePrice * PIN.NumberOfTimes) AS TotalPrice
+                                    FROM 
+                                        tProductInNeed PIN
+                                    WHERE 
+                                        PIN.IsDeleted = 0
+                                    ORDER BY 
+                                        PIN.NumberOfTimes DESC, 
+                                        FIELD(PIN.ProductInNeedStatusId, 1, 2, 3)
+                                    )");
                                 $stmt->execute();
+
                                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     $totalPrice += $row['TotalPrice']; // Accumulate total price
                                     echo '<tr>
                                         <td>' . ($row['ProductName'] ? $row['ProductName'] : '') . '</td>
                                         <td>' . ($row['Barcode'] ? $row['Barcode'] : '') . '</td>
                                         <td>' . ($row['Category'] ? $row['Category'] : '') . '</td>
+                                        <td>' . ($row['StockIntial'] ? $row['StockIntial'] : '') . '</td>
                                         <td>' . ($row['Stock'] ? $row['Stock'] : '') . '</td>
                                         <td>' . $row['Status'] . '</td>
                                         <td>' . ($row['NumberOfTimes'] ? $row['NumberOfTimes'] : '') . '</td>
-                                        <td>' . ($row['Source'] == 'Stock Status' ? '' : 'To be added') . '</td>
                                         <td>' . ($row['Amount'] ? number_format($row['Amount'], 2) : '') . '</td>
                                         <td>' . ($row['TotalPrice'] ? number_format($row['TotalPrice'], 2) : '') . '</td>
                                     </tr>';

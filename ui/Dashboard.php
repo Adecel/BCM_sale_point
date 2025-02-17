@@ -16,14 +16,14 @@
   $total_order=$row->invoice;
   $grand_total=$row->gt;
 
-  $select =$pdo->prepare("select count(product) as pname from tbl_product");
+  $select =$pdo->prepare("select count(ProductName) as pname from tProduct");
   $select->execute();
 
   $row=$select->fetch(PDO::FETCH_OBJ);
 
   $total_product=$row->pname;
 
-  $select =$pdo->prepare("select count(category) as cate from tCategory");
+  $select =$pdo->prepare("select count(CategoryName) as cate from tCategory");
   $select->execute();
 
   $row=$select->fetch(PDO::FETCH_OBJ);

@@ -248,25 +248,43 @@ $totalPages = ceil($total / $limit);
                                         <th>Nom du produit</th>
                                         <th>Nombre de fois recherché</th>
                                         <th>Prix estimé</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="product-list">
                                     <?php
                                     //$select = $pdo->prepare("SELECT * FROM tProductInNeed WHERE IsDeleted = 0 LIMIT $start, $limit");
-                                    $select = $pdo->prepare("SELECT * FROM tProductInNeed WHERE IsDeleted = 0 ORDER BY ModifiedDate DESC LIMIT $start, $limit");
+                                    // $select = $pdo->prepare("SELECT * FROM tProductInNeed WHERE IsDeleted = 0 ORDER BY ModifiedDate DESC LIMIT $start, $limit");
+                                    // $select->execute();
+                                    $select = $pdo->prepare("
+                                        SELECT p.*, s.Description AS StatusDescription
+                                        FROM tProductInNeed p
+                                        LEFT JOIN tProductInNeedStatus s ON p.ProductInNeedStatusId = s.ProductInNeedStatusId
+                                        WHERE p.IsDeleted = 0 
+                                        ORDER BY p.ModifiedDate DESC 
+                                        LIMIT $start, $limit
+                                    ");
                                     $select->execute();
+
                                     while ($row = $select->fetch(PDO::FETCH_OBJ)) {
                                         echo '
                                             <tr>
                                                 <td>' . $row->ProductInNeedName . '</td>
                                                 <td>' . $row->NumberOfTimes . '</td>
                                                 <td>' . ($row->EstimatePrice ? number_format($row->EstimatePrice, 2) : 'N/A') . '</td>
+                                                <td>' . $row->StatusDescription . '</td> <!-- Display the status description -->
                                                 <td>
-                                                    <form method="post" action="">
-                                                        <button type="submit" name="btnedit" class="btn btn-primary" value="' . $row->ProductInNeedId . '">Modifier</button>
-                                                    </form>
-                                                    <a href="ProductMissing.php?id=' . $row->ProductInNeedId . '" class="btn btn-danger"><i class="fa fa-trash-alt"></i> Supprimer</a>
+                                                    <div class="d-flex gap-2">
+                                                        <form method="post" action="">
+                                                            <button type="submit" name="btnedit" class="btn btn-primary" value="' . $row->ProductInNeedId . '">
+                                                                Modifier
+                                                            </button>
+                                                        </form>
+                                                        <a href="ProductMissing.php?id=' . $row->ProductInNeedId . '" class="btn btn-danger">
+                                                            <i class="fa fa-trash-alt"></i> Supprimer
+                                                        </a>
+                                                    </div>
                                                 </td>
                                             </tr>';
                                     }

@@ -1,8 +1,4 @@
 <?php
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -49,9 +45,19 @@ if(isset($_POST['btnsave'])){
     $purchaseprice = $_POST['txtpurchaseprice'];
     $saleprice     = $_POST['txtsaleprice'];
 
+    // $expiryDateForPurchase = $_POST['txtexpiryDate'];
 
-    // Handle EstimateQteForPurchase (Assuming it comes from the form)
-    $estimateQteForPurchase = $_POST['txtestimateqte'];
+    $expiryDateForPurchase = !empty($_POST['txtexpiryDate']) ? $_POST['txtexpiryDate'] : NULL;
+
+    // Validate the expiry date format
+    // $expiryDate = DateTime::createFromFormat('Y-m-d', $expiryDateForPurchase);
+    // if (!$expiryDate || $expiryDate->format('Y-m-d') !== $expiryDateForPurchase) {
+    //     $_SESSION['status'] = "Date d'expiration invalide";
+    //     $_SESSION['status_code'] = "error";
+    //     exit();
+    // } else {
+    //     $expiryDateForPurchase = $expiryDate->format('Y-m-d'); // Use valid date format
+    // }
 
     // Image Code or File Upload Logic
     $f_name        =$_FILES['myfile']['name'];
@@ -74,8 +80,8 @@ if(isset($_POST['btnsave'])){
                 // Insert without barcode (Barcode will be generated)
                 if(empty($barcode)){
                     $insert = $pdo->prepare("INSERT INTO tProduct 
-                    (Barcode, ProductName, CategoryId, ProductStatusId, SupplierId, UnitId, Description, Stock, PurchasePrice, SalePrice, Image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace) 
-                    VALUES (:barcode, :product, :category, :productStatus, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
+                    (Barcode, ProductName, CategoryId, ProductStatusId, SupplierId, UnitId, Description, Stock, PurchasePrice, SalePrice, Image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, ExpiryDate) 
+                    VALUES (:barcode, :product, :category, :productStatus, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :expiryDate)");
 
                     $insert->bindParam(':barcode', $barcode);
                     $insert->bindParam(':product', $product);
@@ -93,7 +99,12 @@ if(isset($_POST['btnsave'])){
                     $insert->bindParam(':createdDate', $createdDate);
                     $insert->bindParam(':modifiedDate', $modifiedDate);
                     $insert->bindParam(':isDeleted', $isDeleted);
-                    $insert->bindParam(':estimateQte', $estimateQteForPurchase);
+                    // $insert->bindParam(':expiryDate', $expiryDateForPurchase);
+                    if ($expiryDateForPurchase !== NULL) {
+                        $insert->bindParam(':expiryDate', $expiryDateForPurchase);
+                    } else {
+                        $insert->bindValue(':expiryDate', NULL, PDO::PARAM_NULL);
+                    }
 
                     $insert->execute();
 
@@ -107,6 +118,39 @@ if(isset($_POST['btnsave'])){
                     // $update->bindParam(':pid', $pid);
                     // $update->execute();
 
+                    // Insert into the audit without barcode table tAuditProduct
+                    $insertAudit = $pdo->prepare("INSERT INTO tAuditProduct 
+                    (ProductId, ProductName, Image, Barcode, SupplierId, CategoryId, UnitId, Stock, SalePrice, PurchasePrice, ProductStatusId, ExpiryDate, CreatedDate, ModifiedDate, CreatedBy, ModifiedBy, IsDeleted)
+                    VALUES
+                    (:productId, :productName, :image, :barcode, :supplierId, :categoryId, :unitId, :stock, :salePrice, :purchasePrice, :productStatusId, :expiryDate, :createdDate, :modifiedDate, :createdBy, :modifiedBy, :isDeleted)");
+
+                    // Bind parameters for tAuditProduct insert
+                    $insertAudit->bindParam(':productId', $pid);
+                    $insertAudit->bindParam(':productName', $product);
+                    $insertAudit->bindParam(':image', $productimage);
+                    $insertAudit->bindParam(':barcode', $newbarcode);
+                    $insertAudit->bindParam(':supplierId', $supplier);
+                    $insertAudit->bindParam(':categoryId', $category);
+                    $insertAudit->bindParam(':unitId', $unit);
+                    $insertAudit->bindParam(':stock', $stock);
+                    $insertAudit->bindParam(':salePrice', $saleprice);
+                    $insertAudit->bindParam(':purchasePrice', $purchaseprice);
+                    $insertAudit->bindParam(':productStatusId', $productStatus);
+                    // $insertAudit->bindParam(':expiryDate', $expiryDateForPurchase);
+                    if ($expiryDateForPurchase !== NULL) {
+                      $insertAudit->bindParam(':expiryDate', $expiryDateForPurchase);
+                    } else {
+                        $insertAudit->bindValue(':expiryDate', NULL, PDO::PARAM_NULL);
+                    }
+                    $insertAudit->bindParam(':createdDate', $createdDate);
+                    $insertAudit->bindParam(':modifiedDate', $modifiedDate);
+                    $insertAudit->bindParam(':createdBy', $createdBy);
+                    $insertAudit->bindParam(':modifiedBy', $modifiedBy);
+                    $insertAudit->bindParam(':isDeleted', $isDeleted);
+
+                    // Execute the audit insert
+                    $insertAudit->execute();
+
                     if($update->execute()){
                         $_SESSION['status'] = "Produit inséré avec succès";
                         $_SESSION['status_code'] = "success";
@@ -116,37 +160,76 @@ if(isset($_POST['btnsave'])){
                     }
 
                 // Insert with barcode
-                } else {
-                    $insert = $pdo->prepare("INSERT INTO tProduct 
-                    (Barcode, ProductName, CategoryId, ProductStatusId, SupplierId, UnitId, Description, Stock, PurchasePrice, SalePrice, Image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, EstimateQteForPurchace)
-                    VALUES (:barcode, :product, :category, :productStatus, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :estimateQte)");
+                }else {
+                  $insert = $pdo->prepare("INSERT INTO tProduct 
+                  (Barcode, ProductName, CategoryId, ProductStatusId, SupplierId, UnitId, Description, Stock, PurchasePrice, SalePrice, Image, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, IsDeleted, ExpiryDate)
+                  VALUES (:barcode, :product, :category, :productStatus, :supplier, :unit, :description, :stock, :pprice, :saleprice, :img, :createdBy, :modifiedBy, :createdDate, :modifiedDate, :isDeleted, :expiryDate)");
 
-                    $insert->bindParam(':barcode', $barcode);
-                    $insert->bindParam(':product', $product);
-                    $insert->bindParam(':category', $category);
-                    $insert->bindParam(':productStatus', $productStatus);
-                    $insert->bindParam(':supplier', $supplier);
-                    $insert->bindParam(':unit', $unit);
-                    $insert->bindParam(':description', $description);
-                    $insert->bindParam(':stock', $stock);
-                    $insert->bindParam(':pprice', $purchaseprice);
-                    $insert->bindParam(':saleprice', $saleprice);
-                    $insert->bindParam(':img', $productimage);
-                    $insert->bindParam(':createdBy', $createdBy);
-                    $insert->bindParam(':modifiedBy', $modifiedBy);
-                    $insert->bindParam(':createdDate', $createdDate);
-                    $insert->bindParam(':modifiedDate', $modifiedDate);
-                    $insert->bindParam(':isDeleted', $isDeleted);
-                    $insert->bindParam(':estimateQte', $estimateQteForPurchase);
+                  $insert->bindParam(':barcode', $barcode);
+                  $insert->bindParam(':product', $product);
+                  $insert->bindParam(':category', $category);
+                  $insert->bindParam(':productStatus', $productStatus);
+                  $insert->bindParam(':supplier', $supplier);
+                  $insert->bindParam(':unit', $unit);
+                  $insert->bindParam(':description', $description);
+                  $insert->bindParam(':stock', $stock);
+                  $insert->bindParam(':pprice', $purchaseprice);
+                  $insert->bindParam(':saleprice', $saleprice);
+                  $insert->bindParam(':img', $productimage);
+                  $insert->bindParam(':createdBy', $createdBy);
+                  $insert->bindParam(':modifiedBy', $modifiedBy);
+                  $insert->bindParam(':createdDate', $createdDate);
+                  $insert->bindParam(':modifiedDate', $modifiedDate);
+                  $insert->bindParam(':isDeleted', $isDeleted);
+                  // $insert->bindParam(':expiryDate', $expiryDateForPurchase);
+                  if ($expiryDateForPurchase !== NULL) {
+                    $insert->bindParam(':expiryDate', $expiryDateForPurchase);
+                  } else {
+                      $insert->bindValue(':expiryDate', NULL, PDO::PARAM_NULL);
+                  }
 
-                    if($insert->execute()){
-                        $_SESSION['status'] = "Produit inséré avec succès";
-                        $_SESSION['status_code'] = "success";
+                  if ($insert->execute()) {
+                    // Get the last inserted product ID
+                    $pid = $pdo->lastInsertId();
+                
+                    // Insert into the audit table tAuditProduct
+                    $insertAudit = $pdo->prepare("INSERT INTO tAuditProduct 
+                        (ProductId, ProductName, Image, Barcode, SupplierId, CategoryId, UnitId, Stock, SalePrice, PurchasePrice, ProductStatusId, ExpiryDate, CreatedDate, ModifiedDate, CreatedBy, ModifiedBy, IsDeleted)
+                        VALUES(:productId, :productName, :image, :barcode, :supplierId, :categoryId, :unitId, :stock, :salePrice, :purchasePrice, :productStatusId, :expiryDate, :createdDate, :modifiedDate, :createdBy, :modifiedBy, :isDeleted)");
+                
+                    // Bind parameters for tAuditProduct insert
+                    $insertAudit->bindParam(':productId', $pid);
+                    $insertAudit->bindParam(':productName', $product);
+                    $insertAudit->bindParam(':image', $productimage);
+                    $insertAudit->bindParam(':barcode', $barcode);
+                    $insertAudit->bindParam(':supplierId', $supplier);
+                    $insertAudit->bindParam(':categoryId', $category);
+                    $insertAudit->bindParam(':unitId', $unit);
+                    $insertAudit->bindParam(':stock', $stock);
+                    $insertAudit->bindParam(':salePrice', $saleprice);
+                    $insertAudit->bindParam(':purchasePrice', $purchaseprice);
+                    $insertAudit->bindParam(':productStatusId', $productStatus);
+                    // $insertAudit->bindParam(':expiryDate', $expiryDateForPurchase);
+                    if ($expiryDateForPurchase !== NULL) {
+                      $insertAudit->bindParam(':expiryDate', $expiryDateForPurchase);
                     } else {
-                        $_SESSION['status'] = "Échec de l'insertion du produit";
-                        $_SESSION['status_code'] = "error";
+                        $insertAudit->bindValue(':expiryDate', NULL, PDO::PARAM_NULL);
                     }
-                }
+                    $insertAudit->bindParam(':createdDate', $createdDate);
+                    $insertAudit->bindParam(':modifiedDate', $modifiedDate);
+                    $insertAudit->bindParam(':createdBy', $createdBy);
+                    $insertAudit->bindParam(':modifiedBy', $modifiedBy);
+                    $insertAudit->bindParam(':isDeleted', $isDeleted);
+                
+                    $insertAudit->execute();
+                
+                    $_SESSION['status'] = "Produit inséré avec succès";
+                    $_SESSION['status_code'] = "success";
+                  }else {
+                    $_SESSION['status'] = "Échec de l'insertion du produit";
+                    $_SESSION['status_code'] = "error";
+                  }
+              }
             }
         }
     } else {
@@ -298,8 +381,8 @@ if(isset($_POST['btnsave'])){
                     </div>
 
                     <div class="form-group">
-                      <label>Quantité estimée pour l'achat</label>
-                      <input type="number" min="1" step="any" class="form-control" placeholder="Entrez la quantité estimée" name="txtestimateqte" required>
+                      <label>Date d'expiration</label>
+                      <input type="Date" min="1" step="any" class="form-control" placeholder="Entrez la quantité estimée" name="txtexpiryDate" >
                     </div>
 
                     <div class="form-group">
