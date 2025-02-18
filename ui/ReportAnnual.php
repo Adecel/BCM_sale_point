@@ -9,13 +9,12 @@ if (isset($_SESSION['role'])) {
         include_once 'header.php';
     } elseif ($_SESSION['role'] == 'Manager') {
         include_once 'ManagerHeader.php';
-    }else {
+    } else {
         // Redirect to the login page or access denied page if role doesn't match
         header('location:../index.php');
         exit();
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -61,39 +60,33 @@ if (isset($_SESSION['role'])) {
                                 </thead>
                                 <tbody>
                                 <?php
-                                $stmt = $pdo->prepare("
-                      SELECT 
-                          p.ProductName AS ProductName,
-                          p.Barcode AS Barcode,
-                          p.CategoryId AS Category,
-                          p.Stock AS Stock,
-                          SUM(id.qty) AS QuantitySold,
-                          SUM(id.qty * id.saleprice) AS TotalSales,
-                          DATE_FORMAT(i.order_date, '%Y') AS SaleYear
-                      FROM 
-                          tProduct p
-                      LEFT JOIN 
-                          tbl_invoice_details id ON p.pid = id.product_id
-                      LEFT JOIN 
-                          tbl_invoice i ON id.invoice_id = i.invoice_id
-                      WHERE
-                          DATE_FORMAT(i.order_date, '%Y') = DATE_FORMAT(CURDATE(), '%Y')
-                      GROUP BY 
-                          p.product, p.barcode, p.category, p.stock, DATE_FORMAT(i.order_date, '%Y')
-                      ORDER BY 
-                          SaleYear
-                    ");
+                                $stmt = $pdo->prepare(" 
+                                    SELECT 
+                                        p.ProductName, 
+                                        p.Barcode, 
+                                        c.CategoryName, 
+                                        p.Stock, 
+                                        COALESCE(SUM(id.qty), 0) AS QuantitySold, 
+                                        COALESCE(SUM(id.qty * id.saleprice), 0) AS TotalSales, 
+                                        DATE_FORMAT(i.order_date, '%Y') AS SaleYear 
+                                    FROM tProduct p 
+                                    LEFT JOIN tCategory c ON p.CategoryId = c.CategoryId 
+                                    LEFT JOIN tbl_invoice_details id ON p.ProductId = id.product_id 
+                                    LEFT JOIN tbl_invoice i ON id.invoice_id = i.invoice_id 
+                                    WHERE DATE_FORMAT(i.order_date, '%Y') = DATE_FORMAT(CURDATE(), '%Y') 
+                                    GROUP BY p.ProductName, p.Barcode, c.CategoryName, p.Stock, SaleYear 
+                                    ORDER BY SaleYear DESC");
                                 $stmt->execute();
-                                while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     echo '<tr>
-                              <td>' . $row['ProductName'] . '</td>
-                              <td>' . $row['Barcode'] . '</td>
-                              <td>' . $row['Category'] . '</td>
-                              <td>' . $row['Stock'] . '</td>
-                              <td>' . $row['QuantitySold'] . '</td>
-                              <td>' . $row['TotalSales'] . '</td>
-                              <td>' . $row['SaleYear'] . '</td>
-                            </tr>';
+                                        <td>' . htmlspecialchars($row['ProductName']) . '</td>
+                                        <td>' . htmlspecialchars($row['Barcode']) . '</td>
+                                        <td>' . htmlspecialchars($row['CategoryName']) . '</td>
+                                        <td>' . htmlspecialchars($row['Stock']) . '</td>
+                                        <td>' . htmlspecialchars($row['QuantitySold']) . '</td>
+                                        <td>' . htmlspecialchars($row['TotalSales']) . '</td>
+                                        <td>' . htmlspecialchars($row['SaleYear']) . '</td>
+                                    </tr>';
                                 }
                                 ?>
                                 </tbody>
