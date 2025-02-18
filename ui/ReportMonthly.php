@@ -9,7 +9,7 @@ if (isset($_SESSION['role'])) {
         include_once 'header.php';
     } elseif ($_SESSION['role'] == 'Manager') {
         include_once 'ManagerHeader.php';
-    }else {
+    } else {
         // Redirect to the login page or access denied page if role doesn't match
         header('location:../index.php');
         exit();
@@ -61,28 +61,29 @@ if (isset($_SESSION['role'])) {
                                 </thead>
                                 <tbody>
                                 <?php
-                                $stmt = $pdo->prepare("
+                                $stmt = $pdo->prepare("  
                       SELECT 
-                          p.product AS ProductName,
-                          p.barcode AS Barcode,
-                          p.category AS Category,
-                          p.stock AS Stock,
+                          p.ProductName,
+                          p.Barcode,
+                          c.CategoryName AS Category,
+                          p.Stock,
                           SUM(id.qty) AS QuantitySold,
                           SUM(id.qty * id.saleprice) AS TotalSales,
                           DATE_FORMAT(i.order_date, '%Y-%m') AS SaleMonth
                       FROM 
-                          tbl_product p
+                          tProduct p
                       LEFT JOIN 
-                          tbl_invoice_details id ON p.pid = id.product_id
+                          tCategory c ON p.CategoryId = c.CategoryId
+                      LEFT JOIN 
+                          tbl_invoice_details id ON p.ProductId = id.product_id
                       LEFT JOIN 
                           tbl_invoice i ON id.invoice_id = i.invoice_id
                       WHERE
                           DATE_FORMAT(i.order_date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
                       GROUP BY 
-                          p.product, p.barcode, p.category, p.stock, DATE_FORMAT(i.order_date, '%Y-%m')
+                          p.ProductName, p.Barcode, c.CategoryName, p.Stock, DATE_FORMAT(i.order_date, '%Y-%m')
                       ORDER BY 
-                          SaleMonth
-                    ");
+                          SaleMonth");
                                 $stmt->execute();
                                 while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
                                     echo '<tr>

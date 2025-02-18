@@ -9,13 +9,11 @@ if (isset($_SESSION['role'])) {
         include_once 'header.php';
     } elseif ($_SESSION['role'] == 'Manager') {
         include_once 'ManagerHeader.php';
-    }else {
-        // Redirect to the login page or access denied page if role doesn't match
+    } else {
         header('location:../index.php');
         exit();
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -63,38 +61,31 @@ if (isset($_SESSION['role'])) {
                                 <?php
                                 $stmt = $pdo->prepare("
                                   SELECT 
-                                      p.product AS ProductName,
-                                      p.barcode AS Barcode,
-                                      p.category AS Category,
-                                      p.stock AS Stock,
-                                      SUM(id.qty) AS QuantitySold,
-                                      SUM(id.qty * id.saleprice) AS TotalSales,
+                                      p.ProductName,
+                                      p.Barcode,
+                                      c.CategoryName,
+                                      p.Stock,
+                                      COALESCE(SUM(id.qty), 0) AS QuantitySold,
+                                      COALESCE(SUM(id.qty * id.saleprice), 0) AS TotalSales,
                                       DATE(i.order_date) AS SaleDate
-                                  FROM 
-                                      tProduct p
-                                  LEFT JOIN 
-                                      tbl_invoice_details id ON p.pid = id.product_id
-                                  LEFT JOIN 
-                                      tbl_invoice i ON id.invoice_id = i.invoice_id
-                                  WHERE
-                                      DATE(i.order_date) = CURDATE()
-                                  GROUP BY 
-                                      p.product, p.barcode, p.category, p.stock, DATE(i.order_date)
-                                  ORDER BY 
-                                      SaleDate
-                                ");
+                                  FROM tProduct p
+                                  LEFT JOIN tCategory c ON p.CategoryId = c.CategoryId
+                                  LEFT JOIN tbl_invoice_details id ON p.ProductId = id.product_id
+                                  LEFT JOIN tbl_invoice i ON id.invoice_id = i.invoice_id
+                                  WHERE DATE(i.order_date) = CURDATE()
+                                  GROUP BY p.ProductName, p.Barcode, c.CategoryName, p.Stock, SaleDate
+                                  ORDER BY SaleDate");
                                 $stmt->execute();
-                                while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-                                    echo '
-                                    <tr>
-                                      <td>' . $row['ProductName'] . '</td>
-                                      <td>' . $row['Barcode'] . '</td>
-                                      <td>' . $row['Category'] . '</td>
-                                      <td>' . $row['Stock'] . '</td>
-                                      <td>' . $row['QuantitySold'] . '</td>
-                                      <td>' . $row['TotalSales'] . '</td>
-                                      <td>' . $row['SaleDate'] . '</td>
-                                    </tr>';
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    echo "<tr>
+                                      <td>{$row['ProductName']}</td>
+                                      <td>{$row['Barcode']}</td>
+                                      <td>{$row['CategoryName']}</td>
+                                      <td>{$row['Stock']}</td>
+                                      <td>{$row['QuantitySold']}</td>
+                                      <td>{$row['TotalSales']}</td>
+                                      <td>{$row['SaleDate']}</td>
+                                    </tr>";
                                 }
                                 ?>
                                 </tbody>
