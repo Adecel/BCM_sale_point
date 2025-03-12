@@ -49,16 +49,6 @@ if(isset($_POST['btnsave'])){
 
     $expiryDateForPurchase = !empty($_POST['txtexpiryDate']) ? $_POST['txtexpiryDate'] : NULL;
 
-    // Validate the expiry date format
-    // $expiryDate = DateTime::createFromFormat('Y-m-d', $expiryDateForPurchase);
-    // if (!$expiryDate || $expiryDate->format('Y-m-d') !== $expiryDateForPurchase) {
-    //     $_SESSION['status'] = "Date d'expiration invalide";
-    //     $_SESSION['status_code'] = "error";
-    //     exit();
-    // } else {
-    //     $expiryDateForPurchase = $expiryDate->format('Y-m-d'); // Use valid date format
-    // }
-
     // Image Code or File Upload Logic
     $f_name        =$_FILES['myfile']['name'];
     $f_tmp         =$_FILES['myfile']['tmp_name'];
