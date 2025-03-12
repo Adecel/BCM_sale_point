@@ -84,14 +84,14 @@ if (isset($_SESSION['role'])) {
                                     $to_date = $_POST['date_2'];
 
                                     // Capital (Total Purchase Price)
-                                    $query = $pdo->prepare("SELECT SUM(PurchasePrice * Stock) AS capital FROM tAuditProduct WHERE CreatedDate BETWEEN :fromdate AND :todate");
+                                    $query = $pdo->prepare("SELECT SUM(PurchasePrice * Stock) AS capital FROM tAuditProduct WHERE IsDeleted = 0 AND CreatedDate BETWEEN :fromdate AND :todate");
                                     $query->bindParam(':fromdate', $from_date);
                                     $query->bindParam(':todate', $to_date);
                                     $query->execute();
                                     $capital = $query->fetch(PDO::FETCH_OBJ)->capital;
 
                                     // Amount in Shop (Total Sale Price)
-                                    $query = $pdo->prepare("SELECT SUM(SalePrice * Stock) AS amount_in_shop FROM tAuditProduct WHERE CreatedDate BETWEEN :fromdate AND :todate");
+                                    $query = $pdo->prepare("SELECT SUM(SalePrice * Stock) AS amount_in_shop FROM tAuditProduct WHERE IsDeleted = 0 AND CreatedDate BETWEEN :fromdate AND :todate");
                                     $query->bindParam(':fromdate', $from_date);
                                     $query->bindParam(':todate', $to_date);
                                     $query->execute();

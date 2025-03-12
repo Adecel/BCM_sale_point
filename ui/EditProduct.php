@@ -47,7 +47,7 @@ error_reporting(E_ALL);
 
   if(isset($_POST['btneditproduct'])){
 
-    // $barcode_txt       =$_POST['txtbarcode'];
+    
     $product_txt        =$_POST['txtproductname'];
     $category_txt       =$_POST['txtselect_option'];
     $unit_txt           =$_POST['txtselect_unit'];
@@ -56,82 +56,133 @@ error_reporting(E_ALL);
     $stock_txt          =$_POST['txtstock'];
     $purchaseprice_txt  =$_POST['txtpurchaseprice'];
     $saleprice_txt      =$_POST['txtsaleprice'];
-    
-    //Image Code or File Code Start Here..
+
+    // Image upload logic
     $f_name        =$_FILES['myfile']['name'];
 
     if(!empty($f_name)){
 
-      $f_tmp         =$_FILES['myfile']['tmp_name'];
-      $f_size        =$_FILES['myfile']['size'];
-      $f_extension   =explode('.',$f_name);
-      $f_extension   =strtolower(end($f_extension));
-      $f_newfile     =uniqid().'.'. $f_extension;   
-        
-      $store = "productimages/".$f_newfile;
-          
-      if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_extension=='gif'){
-        if($f_size>=1000000 ){
-          $_SESSION['status']="Le fichier maximum doit être de 1 Mo";
-          $_SESSION['status_code']="warning";      
-        }else{ 
-          if(move_uploaded_file($f_tmp,$store)){
-      
-            $f_newfile;
+        $f_tmp         =$_FILES['myfile']['tmp_name'];
+        $f_size        =$_FILES['myfile']['size'];
+        $f_extension   =explode('.',$f_name);
+        $f_extension   =strtolower(end($f_extension));
+        $f_newfile     =uniqid().'.'. $f_extension;   
 
-            $update = $pdo->prepare("UPDATE tProduct SET ProductName = :ProductName, CategoryId = :CategoryId, UnitId = :UnitId, 
-            SupplierId = :SupplierId, Description = :Description, Stock = :Stock, PurchasePrice = :PurchasePrice, 
-            SalePrice = :SalePrice, Image = :Image WHERE ProductId = :ProductId");
+        $store = "productimages/".$f_newfile;
 
-            $update->bindParam(':ProductName', $product_txt);
-            $update->bindParam(':CategoryId', $category_txt);
-            $update->bindParam(':UnitId', $unit_txt);
-            $update->bindParam(':SupplierId', $supplier_txt);
-            $update->bindParam(':Description', $description_txt);
-            $update->bindParam(':Stock', $stock_txt);
-            $update->bindParam(':PurchasePrice', $purchaseprice_txt);
-            $update->bindParam(':SalePrice', $saleprice_txt);
-            $update->bindParam(':Image', $f_newfile);
-            $update->bindParam(':ProductId', $id, PDO::PARAM_INT);
-            //$update->bindParam(':ProductId', $id, PDO::PARAM_INT);
+        if($f_extension=='jpg' || $f_extension=='jpeg' ||   $f_extension=='png' || $f_extension=='gif'){
+            if($f_size>=1000000 ){
+                $_SESSION['status']="Le fichier maximum doit être de 1 Mo";
+                $_SESSION['status_code']="warning";      
+            } else { 
+                if(move_uploaded_file($f_tmp,$store)){
+                    // Update tProduct table
+                    $update = $pdo->prepare("UPDATE tProduct SET ProductName = :ProductName, CategoryId = :CategoryId, UnitId = :UnitId, 
+                    SupplierId = :SupplierId, Description = :Description, Stock = :Stock, PurchasePrice = :PurchasePrice, 
+                    SalePrice = :SalePrice, Image = :Image WHERE ProductId = :ProductId");
 
-            if($update->execute()){
-              $_SESSION['status']="Produit mis à jour avec succès avec une nouvelle image";
-              $_SESSION['status_code']="success";
-            }else{
-              $_SESSION['status']="Product Update Failed";
-              $_SESSION['status_code']="error";
-            }
-          } 
-        } 
-      }
+                    $update->bindParam(':ProductName', $product_txt);
+                    $update->bindParam(':CategoryId', $category_txt);
+                    $update->bindParam(':UnitId', $unit_txt);
+                    $update->bindParam(':SupplierId', $supplier_txt);
+                    $update->bindParam(':Description', $description_txt);
+                    $update->bindParam(':Stock', $stock_txt);
+                    $update->bindParam(':PurchasePrice', $purchaseprice_txt);
+                    $update->bindParam(':SalePrice', $saleprice_txt);
+                    $update->bindParam(':Image', $f_newfile);
+                    $update->bindParam(':ProductId', $id, PDO::PARAM_INT);
+
+                    if($update->execute()){
+                        // Insert into tAuditProduct table
+                        $insertAudit = $pdo->prepare("INSERT INTO tAuditProduct 
+                            (ProductId, ProductName, Image, Barcode, SupplierId, CategoryId, UnitId, Stock, SalePrice, PurchasePrice, ProductStatusId, ExpiryDate, CreatedDate, ModifiedDate, CreatedBy, ModifiedBy, IsDeleted)
+                            VALUES (:productId, :productName, :image, :barcode, :supplierId, :categoryId, :unitId, :stock, :salePrice, :purchasePrice, :productStatusId, :expiryDate, :createdDate, :modifiedDate, :createdBy, :modifiedBy, :isDeleted)");
+
+                        // Bind parameters for tAuditProduct insert
+                        $insertAudit->bindParam(':productId', $id);
+                        $insertAudit->bindParam(':productName', $product_txt);
+                        $insertAudit->bindParam(':image', $f_newfile);
+                        $insertAudit->bindParam(':barcode', $barcode_db);  // Keep the same barcode
+                        $insertAudit->bindParam(':supplierId', $supplier_txt);
+                        $insertAudit->bindParam(':categoryId', $category_txt);
+                        $insertAudit->bindParam(':unitId', $unit_txt);
+                        $insertAudit->bindParam(':stock', $stock_txt);
+                        $insertAudit->bindParam(':salePrice', $saleprice_txt);
+                        $insertAudit->bindParam(':purchasePrice', $purchaseprice_txt);
+                        $insertAudit->bindParam(':productStatusId', $productStatus_db);  // You can keep the same or adjust based on logic
+                        $insertAudit->bindParam(':expiryDate', $expiryDate_db);  // You can keep the same expiry date or adjust based on your requirements
+                        $insertAudit->bindParam(':createdDate', $createdDate);
+                        $insertAudit->bindParam(':modifiedDate', $modifiedDate);
+                        $insertAudit->bindParam(':createdBy', $createdBy);
+                        $insertAudit->bindParam(':modifiedBy', $modifiedBy);
+                        $insertAudit->bindParam(':isDeleted', $isDeleted);
+
+                        // Execute audit insert
+                        $insertAudit->execute();
+
+                        $_SESSION['status']="Produit mis à jour avec succès avec une nouvelle image";
+                        $_SESSION['status_code']="success";
+                    } else {
+                        $_SESSION['status']="Product Update Failed";
+                        $_SESSION['status_code']="error";
+                    }
+                } 
+            } 
+        }
     }
-    else{
-      $update = $pdo->prepare("UPDATE tProduct SET ProductName = :ProductName, CategoryId = :CategoryId, UnitId = :UnitId, 
-      SupplierId = :SupplierId, Description = :Description, Stock = :Stock, PurchasePrice = :PurchasePrice, 
-      SalePrice = :SalePrice, Image = :Image WHERE ProductId = :ProductId");
+    else {
+        // Update tProduct table without image
+        $update = $pdo->prepare("UPDATE tProduct SET ProductName = :ProductName, CategoryId = :CategoryId, UnitId = :UnitId, 
+        SupplierId = :SupplierId, Description = :Description, Stock = :Stock, PurchasePrice = :PurchasePrice, 
+        SalePrice = :SalePrice, Image = :Image WHERE ProductId = :ProductId");
 
-      $update->bindParam(':ProductName', $product_txt);
-      $update->bindParam(':CategoryId', $category_txt);
-      $update->bindParam(':UnitId', $unit_txt);
-      $update->bindParam(':SupplierId', $supplier_txt);
-      $update->bindParam(':Description', $description_txt);
-      $update->bindParam(':Stock', $stock_txt);
-      $update->bindParam(':PurchasePrice', $purchaseprice_txt);
-      $update->bindParam(':SalePrice', $saleprice_txt);
-      $update->bindParam(':Image', $image_db);
-      $update->bindParam(':ProductId', $id, PDO::PARAM_INT);
+        $update->bindParam(':ProductName', $product_txt);
+        $update->bindParam(':CategoryId', $category_txt);
+        $update->bindParam(':UnitId', $unit_txt);
+        $update->bindParam(':SupplierId', $supplier_txt);
+        $update->bindParam(':Description', $description_txt);
+        $update->bindParam(':Stock', $stock_txt);
+        $update->bindParam(':PurchasePrice', $purchaseprice_txt);
+        $update->bindParam(':SalePrice', $saleprice_txt);
+        $update->bindParam(':Image', $image_db);  // Keep the existing image
+        $update->bindParam(':ProductId', $id, PDO::PARAM_INT);
 
+        if($update->execute()){
+            // Insert into tAuditProduct table without image change
+            $insertAudit = $pdo->prepare("INSERT INTO tAuditProduct 
+                (ProductId, ProductName, Image, Barcode, SupplierId, CategoryId, UnitId, Stock, SalePrice, PurchasePrice, ProductStatusId, ExpiryDate, CreatedDate, ModifiedDate, CreatedBy, ModifiedBy, IsDeleted)
+                VALUES (:productId, :productName, :image, :barcode, :supplierId, :categoryId, :unitId, :stock, :salePrice, :purchasePrice, :productStatusId, :expiryDate, :createdDate, :modifiedDate, :createdBy, :modifiedBy, :isDeleted)");
 
-      if($update->execute()){
-        $_SESSION['status']="Produit mis à jour avec succès";
-        $_SESSION['status_code']="success";
-      }else{
-        $_SESSION['status']="Product Update Failed";
-        $_SESSION['status_code']="error";
-      }
+            // Bind parameters for tAuditProduct insert
+            $insertAudit->bindParam(':productId', $id);
+            $insertAudit->bindParam(':productName', $product_txt);
+            $insertAudit->bindParam(':image', $image_db);  // Keep the existing image
+            $insertAudit->bindParam(':barcode', $barcode_db);  // Keep the same barcode
+            $insertAudit->bindParam(':supplierId', $supplier_txt);
+            $insertAudit->bindParam(':categoryId', $category_txt);
+            $insertAudit->bindParam(':unitId', $unit_txt);
+            $insertAudit->bindParam(':stock', $stock_txt);
+            $insertAudit->bindParam(':salePrice', $saleprice_txt);
+            $insertAudit->bindParam(':purchasePrice', $purchaseprice_txt);
+            $insertAudit->bindParam(':productStatusId', $productStatus_db);  // You can keep the same or adjust based on logic
+            $insertAudit->bindParam(':expiryDate', $expiryDate_db);  // You can keep the same expiry date or adjust based on your requirements
+            $insertAudit->bindParam(':createdDate', $createdDate);
+            $insertAudit->bindParam(':modifiedDate', $modifiedDate);
+            $insertAudit->bindParam(':createdBy', $createdBy);
+            $insertAudit->bindParam(':modifiedBy', $modifiedBy);
+            $insertAudit->bindParam(':isDeleted', $isDeleted);
+
+            // Execute audit insert
+            $insertAudit->execute();
+
+            $_SESSION['status']="Produit mis à jour avec succès";
+            $_SESSION['status_code']="success";
+        } else {
+            $_SESSION['status']="Product Update Failed";
+            $_SESSION['status_code']="error";
+        }
     }
-  }
+}
 
   $select = $pdo->prepare("SELECT * FROM tProduct WHERE ProductId = :ProductId AND IsDeleted = 0");
   $select->bindParam(':ProductId', $id, PDO::PARAM_INT);
@@ -314,3 +365,71 @@ error_reporting(E_ALL);
     unset($_SESSION['status']);
   }
 ?>
+
+<!--  
+1- Error : 
+Fatal error: Uncaught PDOException: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: 'Librerie' for column `bcm_sale_point_db`.`tproduct`.`CategoryId` at row 1 in /Applications/XAMPP/xamppfiles/htdocs/www/ui/Editproduct.php:150 Stack trace: #0 /Applications/XAMPP/xamppfiles/htdocs/www/ui/Editproduct.php(150): PDOStatement->execute() #1 {main} thrown in /Applications/XAMPP/xamppfiles/htdocs/www/ui/Editproduct.php on line 150
+
+2- Fix this by joining this tables
+
+tCategory
+1	CategoryId Primary	int(11)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+	2	CategoryName	varchar(200)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	3	CreatedBy	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	4	ModifiedBy	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	CreatedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	6	ModifiedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	7	IsDeleted	tinyint(1)			Yes	NULL			Change Change	Drop Drop	
+
+tSupplier
+  1	SupplierId Primary	int(20)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+	2	SupplierName	varchar(200)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	3	SupplierNumber	varchar(200)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	4	SupplierEmail	varchar(200)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	5	SupplierAddress	varchar(200)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	6	CreatedBy	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	7	ModifiedBy	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	8	CreatedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	9	ModifiedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	10	IsDeleted	tinyint(1)			Yes	NULL			Change Change	Drop Drop	
+
+tUnit
+  1	UnitId Primary	int(20)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+	2	UnitName	varchar(200)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	3	CreatedBy	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	4	ModifiedBy	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	CreatedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	6	ModifiedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	7	IsDeleted	tinyint(1)			Yes	NULL			Change Change	Drop Drop	
+
+tProductStatus
+  1	ProductStatusId Primary	int(11)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+	2	Code	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	3	Description	varchar(255)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+	4	ModifiedBy	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	CreatedBy	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	6	ModifiedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	7	CreatedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	8	IsDeleted	tinyint(4)			No	None			Change Change	Drop Drop	
+
+tProduct
+  1	ProductId Primary	int(20)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+	2	Barcode	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	3	ProductName	varchar(500)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	4	CategoryId	int(20)			Yes	NULL			Change Change	Drop Drop	
+	5	Description	varchar(200)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	6	Stock	decimal(10,0)			Yes	NULL			Change Change	Drop Drop	
+	7	PurchasePrice	decimal(10,0)			Yes	NULL			Change Change	Drop Drop	
+	8	SalePrice	decimal(10,0)			Yes	NULL			Change Change	Drop Drop	
+	9	Image	varchar(200)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	10	SupplierId	int(20)			Yes	NULL			Change Change	Drop Drop	
+	11	UnitId	int(20)			Yes	NULL			Change Change	Drop Drop	
+	12	ExpiryDate	date			Yes	NULL			Change Change	Drop Drop	
+	13	CreatedBy	varchar(200)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	14	ModifiedBy	varchar(200)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	15	CreatedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	16	ModifiedDate	datetime			Yes	NULL			Change Change	Drop Drop	
+	17	IsDeleted	tinyint(1)			Yes	NULL			Change Change	Drop Drop	
+	18	ProductTypeId	int(20)			Yes	NULL			Change Change	Drop Drop	
+	19	ProductStatusId	int(11)			Yes	NULL			Change Change	Drop Drop	
+-->
